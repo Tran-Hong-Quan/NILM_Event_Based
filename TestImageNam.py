@@ -15,7 +15,7 @@ delay1 = 60 * frequency
 delay2 = 80 * frequency
 
 # --- Đọc dữ liệu ---
-df = pd.read_csv(csv_path)
+df = pd.read_csv(sv_path)
 time = np.arange(len(df)) / sampling_rate
 Power = df["Power"].values
 I_raw = df["In"].values
