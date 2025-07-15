@@ -4,7 +4,7 @@ import numpy as np
 from Utilis.NILM_Utilis import CycleInterpolator, close_curve
 
 # --- Cấu hình ---
-csv_path = r"C:\Users\Quan\Desktop\Learning\NILM\Datasets\data\data csv 2\NO\sacmt_event_no.csv"
+csv_path = r"ElectricDatas\MyData\data csv\mayep_maysay_tulanh_event_sacmt.csv"
 sampling_rate = 1000
 frequency = 50
 samples_per_cycle = sampling_rate // frequency
