@@ -2,9 +2,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from Utilis.NILM_Utilis import CycleInterpolator, align_phase, close_curve, close_array, calc_prms, plot_to_bw_image, smooth_savgol, is_right_side_greater 
-import os
 # --- Cấu hình ---
-sv_path = os.path.join("ElectricDatas", "MyData", "data csv", "mayep_maysay_tulanh_event_sacmt.csv")
+csv_path = r"ElectricDatas\MyData\data csv\mayep_maysay_tulanh_event_sacmt.csv"
 sampling_rate = 1000
 frequency = 50
 samples_per_cycle = sampling_rate // frequency
@@ -15,7 +14,7 @@ delay1 = 60 * frequency
 delay2 = 80 * frequency
 
 # --- Đọc dữ liệu ---
-df = pd.read_csv(sv_path)
+df = pd.read_csv(csv_path)
 time = np.arange(len(df)) / sampling_rate
 Power = df["Power"].values
 I_raw = df["In"].values
