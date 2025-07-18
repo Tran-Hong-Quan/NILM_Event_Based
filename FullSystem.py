@@ -1,13 +1,17 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from Utilis.EventDectection.QUAN import QuanDetector
+import os
 from Utilis.NILM_Utilis import (CycleInterpolator, CircularBuffer, align_phase, close_curve, 
                                 close_array, calc_prms, plot_to_bw_image, 
                                 smooth_savgol, is_right_side_greater)
+from DrawUIImage import plt_ui_full
+from Utilis.EventDectection.QUAN import QuanDetector
 
 # --- Cấu hình Test ---
-csv_path = r"C:\Users\Quan\Desktop\Learning\NILM\Datasets\data\data csv\sacmt_maysay_tulanh_event_mayep.csv"
+csv_path = r"ElectricDatas\MyData\data csv\sacmt_maysay_tulanh_event_mayep.csv"
+parts = csv_path.replace("\\", "/").split("/")
+csv_path = os.path.join(*parts)
 df = pd.read_csv(csv_path)
 Power = df["Power"].values
 I_raw = df["In"].values
@@ -50,6 +54,28 @@ quan = QuanDetector(EVENT_SAMPLING_RATE,WAMMA_WINDOW_SEC,WAMMA_EDGE_SEC,LOW_DEC_
 state = 0   # Trạng thái hệ thống, -1 là đang khởi tạo, 0 là đang tìm event, 1 là đang thu thập dữ liệu cho nhận diện
 currentCycleCount = 0   # Số vòng đã thu thập được cho ảnh
 
+def cal_img(start1, start2):
+    LAST_CYCLE = CycleInterpolator(SAMPLES_PER_CYCLE,IMAGE_CYCLES) 
+    LAST_CYCLE.update_batch(
+        I_BUFFER.get_range(start1, start1 + SAMPLES_PER_CYCLE * IMAGE_CYCLES),
+        U_BUFFER.get_range(start1, start1 + SAMPLES_PER_CYCLE * IMAGE_CYCLES))
+    CURRENT_CYCLE = CycleInterpolator(SAMPLES_PER_CYCLE,IMAGE_CYCLES) 
+    CURRENT_CYCLE.update_batch(
+        I_BUFFER.get_range(start2, start2 + SAMPLES_PER_CYCLE * IMAGE_CYCLES),
+        U_BUFFER.get_range(start2, start2 + SAMPLES_PER_CYCLE * IMAGE_CYCLES))
+    U_LAST, I_LAST = LAST_CYCLE.get_average()
+    U_CUR, I_CUR = CURRENT_CYCLE.get_average()
+    U_LAST_ALIGNED, best_shift = align_phase(U_CUR, U_LAST)
+    I_LAST_ALIGNED = np.roll(I_LAST, -best_shift)
+    I_RES = (I_CUR - I_LAST_ALIGNED)
+    U_RES = U_CUR
+    I_RES *= is_right_side_greater(I_RES, U_RES)
+    
+    plt_ui_full(SAMPLING_RATE,Power,start1,start1 + SAMPLES_PER_CYCLE * IMAGE_CYCLES,
+                start2,start2 + SAMPLES_PER_CYCLE * IMAGE_CYCLES,U_LAST, I_LAST, U_CUR, I_CUR, I_RES)
+    
+    return U_RES, I_RES
+
 # Hàm cập nhật liên tục
 for idx in range(data_len):
     i = I_raw[idx]
@@ -63,25 +89,8 @@ for idx in range(data_len):
         P_EVENT_BUFFER = []
         # Phát hiện sự kiện
         if event != 0:
-            state = 1
-            LAST_CYCLE = CycleInterpolator(SAMPLES_PER_CYCLE,IMAGE_CYCLES) 
-            LAST_CYCLE.update_batch(
-                I_BUFFER.get_range(BUFFER_LEN - winDuration * SAMPLING_RATE - SAMPLES_PER_CYCLE * IMAGE_CYCLES,
-                                   BUFFER_LEN - winDuration * SAMPLING_RATE),
-                U_BUFFER.get_range(BUFFER_LEN - winDuration * SAMPLING_RATE - SAMPLES_PER_CYCLE * IMAGE_CYCLES,
-                                   BUFFER_LEN - winDuration * SAMPLING_RATE))
-            CURRENT_CYCLE = CycleInterpolator(SAMPLES_PER_CYCLE,IMAGE_CYCLES)   
-            CURRENT_CYCLE.update_batch(
-                I_BUFFER.get_range(BUFFER_LEN - SAMPLES_PER_CYCLE * IMAGE_CYCLES,BUFFER_LEN),
-                U_BUFFER.get_range(BUFFER_LEN - SAMPLES_PER_CYCLE * IMAGE_CYCLES,BUFFER_LEN))
+            cal_img(BUFFER_LEN - winDuration * SAMPLING_RATE - SAMPLES_PER_CYCLE * IMAGE_CYCLES, BUFFER_LEN - winDuration * SAMPLING_RATE)
             
-            U_LAST, I_LAST = LAST_CYCLE.get_average()
-            U_CUR, I_CUR = CURRENT_CYCLE.get_average()
-            U_LAST_ALIGNED, best_shift = align_phase(U_CUR, U_LAST)
-            I_LAST_ALIGNED = I1_aligned = np.roll(I_LAST, -best_shift)
-            I_RES = (I_CUR - I_LAST_ALIGNED)
-            U_RES = U_LAST
-            I_RES *= is_right_side_greater(I_RES, U_RES)
             
             
                 

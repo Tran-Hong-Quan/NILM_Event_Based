@@ -1,7 +1,7 @@
-from EventDectection.WAMMA import WAMMA
-from EventDectection.KalmanFilter import KalmanFilter
-from EventDectection.MLZLNew import MLZLNew
 import numpy
+from KalmanFilter import KalmanFilter
+from MLZLNew import MLZLNew
+from WAMMA import WAMMA
 
 def mean(arr):
     return numpy.mean(arr)
