@@ -54,26 +54,43 @@ state = 0   # Trạng thái hệ thống, -1 là đang khởi tạo, 0 là đang
 currentCycleCount = 0   # Số vòng đã thu thập được cho ảnh
 
 def cal_img(start1, start2):
-    LAST_CYCLE = CycleInterpolator(SAMPLES_PER_CYCLE,IMAGE_CYCLES) 
-    LAST_CYCLE.update_batch(
-        I_BUFFER.get_range(start1, start1 + SAMPLES_PER_CYCLE * IMAGE_CYCLES),
-        U_BUFFER.get_range(start1, start1 + SAMPLES_PER_CYCLE * IMAGE_CYCLES))
-    CURRENT_CYCLE = CycleInterpolator(SAMPLES_PER_CYCLE,IMAGE_CYCLES) 
-    CURRENT_CYCLE.update_batch(
-        I_BUFFER.get_range(start2, start2 + SAMPLES_PER_CYCLE * IMAGE_CYCLES),
-        U_BUFFER.get_range(start2, start2 + SAMPLES_PER_CYCLE * IMAGE_CYCLES))
-    U_LAST, I_LAST = LAST_CYCLE.get_average()
-    U_CUR, I_CUR = CURRENT_CYCLE.get_average()
-    U_LAST_ALIGNED, best_shift = align_phase(U_CUR, U_LAST)
-    I_LAST_ALIGNED = np.roll(I_LAST, -best_shift)
-    I_RES = (I_CUR - I_LAST_ALIGNED)
-    U_RES = U_CUR
-    I_RES *= is_right_side_greater(I_RES, U_RES)
-    
-    plt_ui_full(SAMPLING_RATE,Power,start1,start1 + SAMPLES_PER_CYCLE * IMAGE_CYCLES,
-                start2,start2 + SAMPLES_PER_CYCLE * IMAGE_CYCLES,U_LAST, I_LAST, U_CUR, I_CUR, I_RES)
-    
-    return U_RES, I_RES
+    try:
+        sample_len = int(SAMPLES_PER_CYCLE * IMAGE_CYCLES)
+
+        i1 = I_BUFFER.get_range(start1, start1 + sample_len)
+        u1 = U_BUFFER.get_range(start1, start1 + sample_len)
+        i2 = I_BUFFER.get_range(start2, start2 + sample_len)
+        u2 = U_BUFFER.get_range(start2, start2 + sample_len)
+
+        if len(i1) < sample_len or len(u1) < sample_len or len(i2) < sample_len or len(u2) < sample_len:
+            print("Buffer data too short.")
+            return None, None
+
+        LAST_CYCLE = CycleInterpolator(SAMPLES_PER_CYCLE, IMAGE_CYCLES)
+        LAST_CYCLE.update_batch(i1, u1)
+
+        CURRENT_CYCLE = CycleInterpolator(SAMPLES_PER_CYCLE, IMAGE_CYCLES)
+        CURRENT_CYCLE.update_batch(i2, u2)
+
+        U_LAST, I_LAST = LAST_CYCLE.get_average()
+        U_CUR, I_CUR = CURRENT_CYCLE.get_average()
+
+        U_LAST_ALIGNED, best_shift = align_phase(U_CUR, U_LAST)
+        I_LAST_ALIGNED = np.roll(I_LAST, -int(best_shift))  # ép kiểu tại đây
+
+        I_RES = (I_CUR - I_LAST_ALIGNED)
+        U_RES = U_CUR
+        I_RES *= is_right_side_greater(I_RES, U_RES)
+
+        plt_ui_full(SAMPLING_RATE, Power, start1, start1 + sample_len,
+                    start2, start2 + sample_len, U_LAST, I_LAST, U_CUR, I_CUR, I_RES)
+
+        return U_RES, I_RES
+
+    except Exception as e:
+        print(f"[cal_img] Error: {e}")
+        return None, None
+
 
 # Hàm cập nhật liên tục
 for idx in range(data_len):
@@ -82,13 +99,17 @@ for idx in range(data_len):
     I_BUFFER.push(i)
     U_BUFFER.push(u)
     p = i * u
+    P_EVENT_BUFFER.append(p)
 
     if len(P_EVENT_BUFFER) == P_EVENT_BUFFER_LEN:
         event, winDuration = quan.update(abs(p))
         P_EVENT_BUFFER = []
         # Phát hiện sự kiện
         if event != 0:
-            cal_img(BUFFER_LEN - winDuration * SAMPLING_RATE - SAMPLES_PER_CYCLE * IMAGE_CYCLES, BUFFER_LEN - winDuration * SAMPLING_RATE)
+            s1 = int(BUFFER_LEN - winDuration * SAMPLING_RATE - SAMPLES_PER_CYCLE * IMAGE_CYCLES)
+            s2 = int(BUFFER_LEN - winDuration * SAMPLING_RATE)
+            cal_img(s1, s2)
+
             
             
             
