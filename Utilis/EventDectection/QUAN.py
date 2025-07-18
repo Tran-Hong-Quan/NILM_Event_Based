@@ -1,7 +1,7 @@
 import numpy
-from KalmanFilter import KalmanFilter
-from MLZLNew import MLZLNew
-from WAMMA import WAMMA
+from .KalmanFilter import KalmanFilter
+from .MLZLNew import MLZLNew
+from .WAMMA import WAMMA
 
 def mean(arr):
     return numpy.mean(arr)

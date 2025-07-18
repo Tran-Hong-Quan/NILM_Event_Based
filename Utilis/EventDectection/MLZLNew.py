@@ -4,7 +4,7 @@ class MLZLNew:
     def __init__(self, window_size=6, threshold=30):
         self.window_size = window_size 
         self.threshold = threshold  
-        self.last_winSize = len(self.buffer)
+        self.last_winSize = 0
         self.buffer = []
         self.meanLast = 0
 
