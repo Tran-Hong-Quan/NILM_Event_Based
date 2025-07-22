@@ -5,17 +5,17 @@ from Utilis.NILM_Utilis import CycleInterpolator, close_curve
 import os
 
 # --- Cấu hình ---
-csv_path = r"ElectricDatas\MyData\data csv\mayep_maysay_tulanh_event_sacmt.csv"
+csv_path = r"ElectricDatas\MyData\data csv\mayep_quat_tulanh_event_maysay.csv"
 parts = csv_path.replace("\\", "/").split("/")
 csv_path = os.path.join(*parts)
 
 sampling_rate = 1000
 frequency = 50
 samples_per_cycle = sampling_rate // frequency
-test_cycles = 40
+test_cycles = 100
 interp_factor = 10
 
-delay1 = 500
+delay1 = 5000
 
 # --- Đọc dữ liệu ---
 df = pd.read_csv(csv_path)

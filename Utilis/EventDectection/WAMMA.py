@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+
 class WAMMA:
     def __init__(self, Nw, Nm,P_thr,r_thr):
         self.Nw = Nw
@@ -19,6 +21,8 @@ class WAMMA:
     def adjustWindows(self):
         self.Nw_w += 1
         self.N_Lm -= 1
+        if self.N_Lm < 2:
+            self.N_Lm = 2
 
     def update(self, value):
         self.window.append(value)
@@ -73,8 +77,8 @@ class WAMMA:
                 return 0
             
         # Caculate event
-        if self.N_Lm <= 0:
-            ul = self.window[0]
+        if self.N_Lm <= 2:
+            ul = self.window[0] / 2 + self.window[1] / 2
         else :
             ul = sum(self.window[:self.N_Lm]) / self.N_Lm
         ur = sum(self.window[-self.N_Rm:]) / self.N_Rm
@@ -86,8 +90,41 @@ class WAMMA:
         elif delta_P < -self.P_thre_w:
             sgt = -1
     
-        self.createWindow()
+        # if sgt != 0:
+        #     print("Delta P:", delta_P)
 
+        #     # Vẽ đồ thị công suất
+        #     plt.figure(figsize=(10, 5))
+        #     x = list(range(len(self.window)))
+        #     y = self.window
+
+        #     plt.plot(x, y, label='Công suất', color='blue', linewidth=2)
+
+        #     # Vùng biên trái (Left Margin)
+        #     if self.N_Lm > 0:
+        #         plt.axvspan(0, self.N_Lm - 1, color='green', alpha=0.3, label='Biên trái')
+
+        #     # Vùng biên phải (Right Margin)
+        #     if self.N_Rm > 0:
+        #         plt.axvspan(self.Nw_w - self.N_Rm, self.Nw_w - 1, color='red', alpha=0.3, label='Biên phải')
+
+        #     # Đường trung bình trái/phải
+        #     plt.axhline(ul, color='green', linestyle='--', label='ul (trung bình trái)')
+        #     plt.axhline(ur, color='red', linestyle='--', label='ur (trung bình phải)')
+
+        #     # Vẽ đường ngưỡng ±P_thre_w
+        #     plt.axhline(self.P_thre_w, color='gray', linestyle=':', linewidth=1, label='+Ngưỡng')
+        #     plt.axhline(-self.P_thre_w, color='gray', linestyle=':', linewidth=1, label='-Ngưỡng')
+
+        #     plt.title(f'Đồ thị công suất - ΔP = {delta_P:.2f}')
+        #     plt.xlabel('Chỉ số mẫu (index)')
+        #     plt.ylabel('Giá trị công suất')
+        #     plt.legend()
+        #     plt.grid(True)
+        #     plt.tight_layout()
+        #     plt.show()
+
+        self.createWindow()
         return sgt
     
     def sgn(value):

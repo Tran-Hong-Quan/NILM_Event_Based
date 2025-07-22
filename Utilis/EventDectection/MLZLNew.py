@@ -27,6 +27,7 @@ class MLZLNew:
                 event = 1
             else:
                 event = -1
+        self.last_winSize = len(self.buffer)
         self.buffer = []
         self.meanLast = mean_before
         
