@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from Utilis.NILM_Utilis import close_curve, smooth_savgol, close_array, plot_to_bw_image
+from Utilis.NILM_Utilis import close_curve, smooth_savgol, close_array, plot_to_bw_image_with_gaussian_dots
 
 def plt_ui_full(sampling_rate, Power, start1, end1, start2, end2, U1, I1, U2, I2, I_diff):
     time = np.arange(len(Power)) / sampling_rate
@@ -67,7 +67,7 @@ def plt_ui_full(sampling_rate, Power, start1, end1, start2, end2, U1, I1, U2, I2
 
     # --- VẼ HÌNH 5: Ảnh đen trắng ---
     plt.figure(figsize=(6, 6))
-    img = plot_to_bw_image(U2_closed, I_diff_closed, 32, 32)
+    img = plot_to_bw_image_with_gaussian_dots(U2_closed, I_diff_closed, 32, 32, 2 , 0.4)
     plt.title("Ảnh I2 - I1")
     plt.imshow(img, cmap='gray')
     plt.tight_layout()
@@ -156,7 +156,8 @@ def plt_ui_full_onefig(sampling_rate, Power, start1, end1, start2, end2, U1, I1,
 
     # 4. Ảnh trắng đen
     ax4 = fig.add_subplot(gs[1, 3])
-    img = plot_to_bw_image(U2_closed, I_diff_closed, 32, 32)
+    print(len(U2_closed))
+    img = plot_to_bw_image_with_gaussian_dots(U2_closed, I_diff_closed, 32, 32,1,0.3)
     ax4.imshow(img, cmap='gray')
     ax4.set_title("Ảnh trắng đen từ I2 - I1")
     ax4.axis('off')

@@ -2,6 +2,54 @@ import numpy as np
 from scipy.interpolate import interp1d
 import cv2
 from scipy.signal import savgol_filter
+import numpy as np
+import cv2
+
+def draw_gaussian_dot(img, x, y, radius=2, alpha=0.5):
+    """
+    Vẽ một chấm Gaussian mờ từ tâm tại (x, y) trên ảnh `img`, với bán kính `radius` và độ mờ tối đa `alpha`.
+    """
+    h, w = img.shape
+
+    # Tạo kernel Gaussian 2D
+    size = 2 * radius + 1
+    sigma = radius / 2.0  # Điều chỉnh sigma theo radius
+    ax = np.linspace(-(radius), radius, size)
+    gauss = np.exp(-(ax**2) / (2 * sigma**2))
+    kernel = np.outer(gauss, gauss)
+    kernel = kernel / np.max(kernel) * alpha  # Chuẩn hóa về [0, alpha]
+
+    # Giới hạn vùng chấm để không vượt ảnh
+    x0 = max(0, x - radius)
+    x1 = min(w, x + radius + 1)
+    y0 = max(0, y - radius)
+    y1 = min(h, y + radius + 1)
+
+    kx0 = radius - (x - x0)
+    kx1 = kx0 + (x1 - x0)
+    ky0 = radius - (y - y0)
+    ky1 = ky0 + (y1 - y0)
+
+    # Blend: vùng ảnh sáng (255) trừ mờ theo kernel
+    region = img[y0:y1, x0:x1].astype(np.float32) / 255.0
+    region = region * (1 - kernel[ky0:ky1, kx0:kx1])
+    img[y0:y1, x0:x1] = (region * 255).astype(np.uint8)
+
+def plot_to_bw_image_with_gaussian_dots(U, I, width, height, radius=2, alpha=0.5):
+    # Tạo ảnh trắng
+    img = np.ones((height, width), dtype=np.uint8) * 255
+
+    # Chuẩn hóa U và I về ảnh
+    U_norm = np.interp(U, (min(U), max(U)), (0, width - 1))
+    I_norm = np.interp(I, (min(I), max(I)), (height - 1, 0))  # Trục Y ngược
+
+    for i in range(len(U)):
+        x = int(U_norm[i])
+        y = int(I_norm[i])
+        draw_gaussian_dot(img, x, y, radius=radius, alpha=alpha)
+
+    return img
+
 
 def plot_to_bw_image(U, I, width, height):
     # Tạo ảnh trắng

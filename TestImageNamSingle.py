@@ -1,11 +1,11 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from Utilis.NILM_Utilis import CycleInterpolator, close_curve
+from Utilis.NILM_Utilis import CycleInterpolator, close_curve, plot_to_bw_image_with_gaussian_dots
 import os
 
 # --- Cấu hình ---
-csv_path = r"ElectricDatas\MyData\data csv\mayep_quat_tulanh_event_maysay.csv"
+csv_path = r"ElectricDatas\MyData\data csv 2\NO\tulanh_event_no.csv"
 parts = csv_path.replace("\\", "/").split("/")
 csv_path = os.path.join(*parts)
 
@@ -15,7 +15,7 @@ samples_per_cycle = sampling_rate // frequency
 test_cycles = 100
 interp_factor = 10
 
-delay1 = 5000
+delay1 = 0
 
 # --- Đọc dữ liệu ---
 df = pd.read_csv(csv_path)
@@ -61,6 +61,11 @@ plt.ylabel("Current I (A)")
 plt.title("Trung bình I theo U (Test 1)")
 plt.grid(True)
 plt.legend()
+plt.tight_layout()
+plt.figure(figsize=(6, 6))
+img = plot_to_bw_image_with_gaussian_dots(U_Closed, I_Closed,32,32,2,0.3)
+plt.title("Ảnh I2 - I1")
+plt.imshow(img, cmap='gray')
 plt.tight_layout()
 
 plt.show()

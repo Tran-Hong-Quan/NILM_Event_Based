@@ -23,8 +23,7 @@ FREQUENCY = 50              # Tần số mạng điện
 BUFFER_DURATION = 60        # Độ dài tính bằng thời gian cho bộ đệm lưu I và U
 # -----------Tham số trích xuất ảnh------------------------------------
 IMAGE_CYCLE_DURATION = 2    # Thời gian lấy mẫu để tạo ảnh
-INTERP_FACTOR = 6           # Nhân tử nội suy
-WINDOWN_DURAION = 10
+INTERP_FACTOR = 10           # Nhân tử nội suy
 # -----------Tham số bộ phát hiện sự kiện------------------------------
 EVENT_SAMPLING_RATE = 100   # Tần số lấy mẫu cho bộ phát hiện sự kiện
 WAMMA_WINDOW_SEC = 4        # Cửa sổ wamma
@@ -66,6 +65,7 @@ currentCycleCount = 0   # Số vòng đã thu thập được cho ảnh
 
 # Hàm tính ảnh I2 - I1 và gọi hàm vẽ
 def cal_img(start1, start2, idx):
+    print(SAMPLE_PER_IMAGE)
     i1 = I_raw[start1 : start1 + SAMPLE_PER_IMAGE]
     u1 = U_raw[start1 : start1 + SAMPLE_PER_IMAGE]
     i2 = I_raw[start2 : start2 + SAMPLE_PER_IMAGE]
@@ -80,9 +80,9 @@ def cal_img(start1, start2, idx):
         print("[Warning] Không đủ mẫu để tạo ảnh.")
         return
 
-    LAST_CYCLE = CycleInterpolator(SAMPLES_PER_CYCLE, IMAGE_CYCLES)
+    LAST_CYCLE = CycleInterpolator(SAMPLES_PER_CYCLE, INTERP_FACTOR)
     LAST_CYCLE.update_batch(i1, u1)
-    CURRENT_CYCLE = CycleInterpolator(SAMPLES_PER_CYCLE, IMAGE_CYCLES)
+    CURRENT_CYCLE = CycleInterpolator(SAMPLES_PER_CYCLE, INTERP_FACTOR)
     CURRENT_CYCLE.update_batch(i2, u2)
 
     U_LAST, I_LAST = LAST_CYCLE.get_average()
@@ -117,7 +117,7 @@ for idx in range(data_len):
             
             base = idx
             step = SAMPLE_PER_IMAGE
-            MIN_GAP_SEC = 2
+            MIN_GAP_SEC = 4
             MIN_GAP_LEN = int(MIN_GAP_SEC * SAMPLING_RATE)
 
             start_window = base - int(BWD_SEC * SAMPLING_RATE)
