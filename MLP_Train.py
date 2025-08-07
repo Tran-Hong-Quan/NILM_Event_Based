@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import Dataset, DataLoader
 import joblib
+from MLP import MLP
 
 # --- Config ---
 csv_path = "output_data.csv"
@@ -54,49 +55,9 @@ val_dataset = DualBranchDataset(val_df, transform)
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size)
 
-# --- MLP Dual-Branch Model ---
-class MLPDualBranch(nn.Module):
-    def __init__(self, img_input_size, p_input_size=1, num_classes=3):
-        super().__init__()
-
-        # Nhánh ảnh (xử lý nhiều tầng hơn)
-        self.img_branch = nn.Sequential(
-            nn.Linear(img_input_size, 512),
-            nn.ReLU(),
-            nn.Linear(512, 256),
-            nn.ReLU(),
-            nn.Linear(256, 128),
-            nn.ReLU(),
-            nn.Linear(128, 64),
-            nn.ReLU()
-        )
-
-        # Nhánh P_mean (xử lý nhẹ nhưng giữ đặc trưng)
-        self.p_branch = nn.Sequential(
-            nn.Linear(p_input_size, 32),
-            nn.ReLU(),
-            nn.Linear(32, 16),
-            nn.ReLU()
-        )
-
-        # Nhánh kết hợp
-        self.classifier = nn.Sequential(
-            nn.Linear(64 + 16, 64),
-            nn.ReLU(),
-            nn.Linear(64, num_classes)
-        )
-
-    def forward(self, img, p_mean):
-        img_feat = self.img_branch(img)
-        p_feat = self.p_branch(p_mean)
-        combined = torch.cat((img_feat, p_feat), dim=1)
-        out = self.classifier(combined)
-        return out
-
-
 # --- Training setup ---
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = MLPDualBranch(img_input_size=image_size*image_size, num_classes=num_classes).to(device)
+model = MLP(img_input_size=image_size*image_size, num_classes=num_classes).to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
@@ -130,6 +91,6 @@ for epoch in range(num_epochs):
     print(f"Epoch {epoch+1}/{num_epochs} | Loss: {total_loss/len(train_dataset):.4f} | Val Acc: {acc:.2f}%")
 
 # --- Save model and label encoder ---
-torch.save(model.state_dict(), "mlp_dual_branch.pth")
+torch.save(model.state_dict(), "mlp.pth")
 joblib.dump(label_encoder, "label_encoder.pkl")
 print("✅ Mô hình đã được lưu.")

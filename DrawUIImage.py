@@ -97,12 +97,12 @@ def plt_event_window(power_array, sampling_rate, start_idx, end_idx, idx):
     plt.show()
 
 
-def plt_ui_full_onefig(sampling_rate, Power, start1, end1, start2, end2, U1, I1, U2, I2, I_diff):
+def plt_ui_full_onefig(sampling_rate, Power, start1, end1, start2, end2, U1, I1, U2, I2,I_diff ,img, p_mean, label,confidence):
     time = np.arange(len(Power)) / sampling_rate
 
     fig = plt.figure(figsize=(20, 10))
     gs = fig.add_gridspec(2, 4, height_ratios=[1, 1])
-    fig.suptitle("So sánh ảnh trước và sau sự kiện", fontsize=16)
+    fig.suptitle(f"So sánh ảnh trước và sau sự kiện, delta P = {p_mean} \nDự đoán: {label}, Độ chắc chắn: {confidence}", fontsize=16)
 
     # --- Hàng trên: Power ---
     ax_top = fig.add_subplot(gs[0, :])
@@ -157,7 +157,6 @@ def plt_ui_full_onefig(sampling_rate, Power, start1, end1, start2, end2, U1, I1,
     # 4. Ảnh trắng đen
     ax4 = fig.add_subplot(gs[1, 3])
     print(len(U2_closed))
-    img = plot_to_bw_image_with_gaussian_dots(U2_closed, I_diff_closed, 32, 32,1,0.3)
     ax4.imshow(img, cmap='gray')
     ax4.set_title("Ảnh trắng đen từ I2 - I1")
     ax4.axis('off')

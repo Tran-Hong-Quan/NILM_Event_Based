@@ -3,12 +3,14 @@ import numpy as np
 import os
 from Utilis.NILM_Utilis import (CycleInterpolator, CircularBuffer, align_phase, close_curve, 
                                 close_array, calc_prms, plot_to_bw_image, 
-                                smooth_savgol, is_right_side_greater)
+                                smooth_savgol, is_right_side_greater, plot_to_bw_image_with_gaussian_dots)
 from DrawUIImage import plt_ui_full, plt_event_window,plt_ui_full_onefig
 from Utilis.EventDectection.QUAN import QuanDetector
+from MLP_Predict import MLP_Predict
+from PIL import Image
 
 # --- Cấu hình Test ---
-csv_path = r"ElectricDatas\MyData\data csv\tulanh_quat_maysay_event_mayep.csv"
+csv_path = r"ElectricDatas\MyData\data csv 2\sacmt_event_tulanh.csv"
 parts = csv_path.replace("\\", "/").split("/")
 csv_path = os.path.join(*parts)
 df = pd.read_csv(csv_path)
@@ -63,17 +65,23 @@ quan = QuanDetector(event_sampling_rate = EVENT_SAMPLING_RATE,
 state = 0   # Trạng thái hệ thống, -1 là đang khởi tạo, 0 là đang tìm event, 1 là đang thu thập dữ liệu cho nhận diện
 currentCycleCount = 0   # Số vòng đã thu thập được cho ảnh
 
+#Khởi tạo mô hình MLP
+clf = MLP_Predict(
+    model_path="MLP.pth",
+    label_encoder_path="label_encoder.pkl"
+)
+
 # Hàm tính ảnh I2 - I1 và gọi hàm vẽ
 def cal_img(start1, start2, idx):
-    print(SAMPLE_PER_IMAGE)
+    #print(SAMPLE_PER_IMAGE)
     i1 = I_raw[start1 : start1 + SAMPLE_PER_IMAGE]
     u1 = U_raw[start1 : start1 + SAMPLE_PER_IMAGE]
     i2 = I_raw[start2 : start2 + SAMPLE_PER_IMAGE]
     u2 = U_raw[start2 : start2 + SAMPLE_PER_IMAGE]
 
-    delta_p_rms = abs(calc_prms(i2,u2) - calc_prms(i1,u1))
-    print("Delta P RMS = "  +str(delta_p_rms))
-    if(delta_p_rms < 15) :
+    delta_p_mean = abs(calc_prms(i2,u2) - calc_prms(i1,u1))
+    print("Delta P RMS = "  +str(delta_p_mean))
+    if(delta_p_mean < 15) :
         return
 
     if len(i1) < SAMPLE_PER_IMAGE or len(i2) < SAMPLE_PER_IMAGE:
@@ -93,11 +101,15 @@ def cal_img(start1, start2, idx):
     I_RES = (I_CUR - I_LAST_ALIGNED)
     U_RES = U_CUR
     I_RES *= is_right_side_greater(I_RES, U_RES)
+    img_np = plot_to_bw_image_with_gaussian_dots(U_RES, I_RES, 32, 32,1,0.3)
+    image = Image.fromarray(img_np, mode='L') 
+    label,confidence  = clf.predict(image_input=img_np, p_mean=delta_p_mean)
 
     plt_ui_full_onefig(SAMPLING_RATE, Power,
                 start1, start1 + SAMPLE_PER_IMAGE,
                 start2, start2 + SAMPLE_PER_IMAGE,
-                U_LAST, I_LAST, U_CUR, I_CUR, I_RES)
+                U_LAST, I_LAST, U_CUR, I_CUR, I_RES,image,delta_p_mean,label,confidence)
+    
 
 # -------------------- Vòng lặp chính --------------------
 for idx in range(data_len):
