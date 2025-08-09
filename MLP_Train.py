@@ -11,7 +11,7 @@ import joblib
 from MLP import MLP
 
 # --- Config ---
-csv_path = "output_data.csv"
+csv_path = "MLP_data.csv"
 image_size = 32
 batch_size = 32
 num_epochs = 20
@@ -91,6 +91,6 @@ for epoch in range(num_epochs):
     print(f"Epoch {epoch+1}/{num_epochs} | Loss: {total_loss/len(train_dataset):.4f} | Val Acc: {acc:.2f}%")
 
 # --- Save model and label encoder ---
-torch.save(model.state_dict(), "mlp.pth")
-joblib.dump(label_encoder, "label_encoder.pkl")
+torch.save(model.state_dict(), "MLMP.pth")
+joblib.dump(label_encoder, "MLP_label_encoder.pkl")
 print("✅ Mô hình đã được lưu.")

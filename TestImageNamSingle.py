@@ -34,6 +34,9 @@ interp1 = CycleInterpolator(samples_per_cycle, interp_factor)
 interp1.update_batch(I_seg1, U_seg1)
 U, I = interp1.get_average()
 
+# --- Tính P trung bình ---
+P_mean = np.mean(U * I)  # W
+
 # --- VẼ HÌNH 1: Power theo thời gian ---
 plt.figure(figsize=(12, 5))
 plt.plot(time, Power, label="Power (W)", color='black')
@@ -55,16 +58,18 @@ plt.tight_layout()
 # --- VẼ HÌNH 2: Test 1 ---
 plt.figure(figsize=(6, 6))
 U_Closed, I_Closed = close_curve(U, I)
-plt.plot(U_Closed, I_Closed, label='Test 1', color='blue')
+plt.plot(U_Closed, I_Closed, label=f'Test 1\nP_mean = {P_mean:.2f} W', color='blue')
 plt.xlabel("Voltage U (V)")
 plt.ylabel("Current I (A)")
 plt.title("Trung bình I theo U (Test 1)")
 plt.grid(True)
 plt.legend()
 plt.tight_layout()
+
+# --- VẼ HÌNH 3: Ảnh từ dữ liệu ---
 plt.figure(figsize=(6, 6))
-img = plot_to_bw_image_with_gaussian_dots(U_Closed, I_Closed,32,32,2,0.3)
-plt.title("Ảnh I2 - I1")
+img = plot_to_bw_image_with_gaussian_dots(U_Closed, I_Closed, 32, 32, 2, 0.3)
+plt.title(f"Ảnh I-U (P_mean = {P_mean:.2f} W)")
 plt.imshow(img, cmap='gray')
 plt.tight_layout()
 

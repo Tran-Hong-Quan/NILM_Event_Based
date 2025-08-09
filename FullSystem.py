@@ -8,6 +8,7 @@ from DrawUIImage import plt_ui_full, plt_event_window,plt_ui_full_onefig
 from Utilis.EventDectection.QUAN import QuanDetector
 from MLP_Predict import MLP_Predict
 from PIL import Image
+from Template_Matcher import TemplateMatcher  
 
 # --- Cấu hình Test ---
 csv_path = r"ElectricDatas\MyData\data csv 2\sacmt_event_tulanh.csv"
@@ -68,8 +69,11 @@ currentCycleCount = 0   # Số vòng đã thu thập được cho ảnh
 #Khởi tạo mô hình MLP
 clf = MLP_Predict(
     model_path="MLP.pth",
-    label_encoder_path="label_encoder.pkl"
+    label_encoder_path="MLP_label_encoder.pkl"
 )
+
+#Khởi tạo hậu xử lý dữ liệu
+matcher = TemplateMatcher("Template_dataset")
 
 # Hàm tính ảnh I2 - I1 và gọi hàm vẽ
 def cal_img(start1, start2, idx):
@@ -104,6 +108,7 @@ def cal_img(start1, start2, idx):
     img_np = plot_to_bw_image_with_gaussian_dots(U_RES, I_RES, 32, 32,1,0.3)
     image = Image.fromarray(img_np, mode='L') 
     label,confidence  = clf.predict(image_input=img_np, p_mean=delta_p_mean)
+    #label = matcher.match(label,delta_p_mean,img_np)
 
     plt_ui_full_onefig(SAMPLING_RATE, Power,
                 start1, start1 + SAMPLE_PER_IMAGE,

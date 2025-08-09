@@ -3,7 +3,7 @@ import numpy as np
 
 # Đường dẫn tới mô hình và label encoder
 model_path = "MLP.pth"
-label_encoder_path = "label_encoder.pkl"
+label_encoder_path = "MLP_label_encoder.pkl"
 image_path = "training_images\sacmt_segment_0080.png"  # Thay bằng đường dẫn thật đến ảnh bạn muốn test
 p_mean = 90                # Thay bằng giá trị thật của P_mean
 
