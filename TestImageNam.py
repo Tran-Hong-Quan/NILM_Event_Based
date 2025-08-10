@@ -1,21 +1,21 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from Utilis.NILM_Utilis import CycleInterpolator, align_phase, close_curve, close_array, calc_prms, plot_to_bw_image, smooth_savgol, is_right_side_greater 
+from Utilis.NILM_Utilis import CycleInterpolator, align_phase, close_curve, close_array, calc_prms, plot_to_bw_image_with_gaussian_dots, smooth_savgol, is_right_side_greater 
 import os
 
 # --- Cấu hình ---
-csv_path = r"ElectricDatas\MyData\data csv 2\sacmt_event_mayep.csv"
+csv_path = r"ElectricDatas\MyData\data csv\sacmt_maysay_tulanh_event_mayep.csv"
 parts = csv_path.replace("\\", "/").split("/")
 csv_path = os.path.join(*parts)
 sampling_rate = 1000
 frequency = 50
 samples_per_cycle = sampling_rate // frequency
 test_cycles = 50
-interp_factor = 6
+interp_factor = 10
 
-delay1 = 65 * frequency
-delay2 = 73 * frequency
+delay1 = 62 * frequency
+delay2 = 68 * frequency
 
 # --- Đọc dữ liệu ---
 df = pd.read_csv(csv_path)
@@ -120,7 +120,7 @@ plt.legend()
 plt.tight_layout()
 
 plt.figure(figsize=(6, 6))
-img = plot_to_bw_image(U2_closed, I_diff_closed,32,32)
+img = plot_to_bw_image_with_gaussian_dots(U2_closed, I_diff_closed,32,32 ,2, 0.3)
 plt.title("Ảnh I2 - I1")
 plt.imshow(img, cmap='gray')
 plt.tight_layout()

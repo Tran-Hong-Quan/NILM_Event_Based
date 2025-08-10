@@ -156,7 +156,6 @@ def plt_ui_full_onefig(sampling_rate, Power, start1, end1, start2, end2, U1, I1,
 
     # 4. Ảnh trắng đen
     ax4 = fig.add_subplot(gs[1, 3])
-    print(len(U2_closed))
     ax4.imshow(img, cmap='gray')
     ax4.set_title("Ảnh trắng đen từ I2 - I1")
     ax4.axis('off')

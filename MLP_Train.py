@@ -91,6 +91,6 @@ for epoch in range(num_epochs):
     print(f"Epoch {epoch+1}/{num_epochs} | Loss: {total_loss/len(train_dataset):.4f} | Val Acc: {acc:.2f}%")
 
 # --- Save model and label encoder ---
-torch.save(model.state_dict(), "MLMP.pth")
+torch.save(model.state_dict(), "MLP.pth")
 joblib.dump(label_encoder, "MLP_label_encoder.pkl")
 print("✅ Mô hình đã được lưu.")

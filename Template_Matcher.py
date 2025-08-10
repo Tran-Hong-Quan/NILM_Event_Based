@@ -1,85 +1,78 @@
 import os
 import csv
+import json
 import numpy as np
-from PIL import Image
-from skimage.metrics import structural_similarity as ssim
+from Utilis.NILM_Utilis import align_phase
 
 class TemplateMatcher:
     def __init__(self, dataset_dir):
         """
-        dataset_dir: thư mục chứa metadata.csv và ảnh mẫu
+        dataset_dir: thư mục chứa Template_data.csv
         """
         self.dataset_dir = dataset_dir
         self.templates = []
         self._load_templates()
 
     def _load_templates(self):
-        csv_path = os.path.join(self.dataset_dir, "metadata.csv")
+        csv_path = os.path.join(self.dataset_dir, "Template_data.csv")
         if not os.path.exists(csv_path):
-            raise FileNotFoundError(f"metadata.csv không tồn tại trong {self.dataset_dir}")
+            raise FileNotFoundError(f"Template_data.csv không tồn tại trong {self.dataset_dir}")
 
         with open(csv_path, newline='', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for row in reader:
-                template_path = os.path.join(self.dataset_dir, row["filename"])
-                if not os.path.exists(template_path):
-                    continue
                 self.templates.append({
-                    "filename": template_path,
                     "P_mean": float(row["P_mean"]),
                     "label": row["label"],
                     "p_tolerance": float(row["p_tolerance"]),
-                    "img_tolerance": float(row["img_tolerance"])
+                    "ui_tolerance": float(row["ui_tolerance"]),
+                    "U_array": np.array(json.loads(row["U_array"])),
+                    "I_array": np.array(json.loads(row["I_array"]))
                 })
 
-    def _load_image(self, img):
+    def match(self, label, P_mean, U_input, I_input):
         """
-        Chuyển ảnh đầu vào thành numpy grayscale 0-1
+        Trả về label nếu khớp, "null" nếu không khớp.
+        U_input, I_input: numpy array
         """
-        if isinstance(img, np.ndarray):
-            arr = img
-        elif isinstance(img, Image.Image):
-            arr = np.array(img)
-        elif isinstance(img, str):
-            arr = np.array(Image.open(img))
-        else:
-            raise TypeError("Ảnh phải là numpy.ndarray, PIL.Image.Image hoặc đường dẫn (str)")
-
-        # Chuyển sang grayscale nếu là ảnh màu
-        if arr.ndim == 3:
-            arr = np.mean(arr, axis=2)
-        arr = arr.astype(np.float32) / 255.0
-        return arr
-
-    def match(self, label, P_mean, img):
-        """
-        Trả về label nếu khớp, "null" nếu không khớp
-        """
-        img_arr = self._load_image(img)
-
         for tpl in self.templates:
-            # 1. Check nhãn
+            # 1. Kiểm tra nhãn
             if tpl["label"] != label:
                 continue
 
+            # 2. So sánh P_mean
             p_similarity = min(P_mean, tpl["P_mean"]) / max(P_mean, tpl["P_mean"])
-            if p_similarity < tpl["p_tolerance"]:  # ví dụ: p_tolerance = 0.95
+            print(f"P_similarity = {p_similarity:.4f}")
+
+            if p_similarity < tpl["p_tolerance"]:
                 continue
 
-            # 3. Check ảnh tolerance
-            tpl_img = self._load_image(tpl["filename"])
-            # Resize ảnh đầu vào về kích thước mẫu để so sánh
-            if tpl_img.shape != img_arr.shape:
-                img_arr_resized = np.array(Image.fromarray((img_arr * 255).astype(np.uint8)).resize(
-                    (tpl_img.shape[1], tpl_img.shape[0]), Image.BILINEAR)) / 255.0
-            else:
-                img_arr_resized = img_arr
+            # 3. So sánh U/I sau khi căn pha
+            U_tpl = tpl["U_array"]
+            I_tpl = tpl["I_array"]
 
-            score = ssim(tpl_img, img_arr_resized, data_range=1.0)
-            diff = 1 - score  # độ khác biệt (0 là giống hệt)
-            print("Img diff = " + str(diff))
-            print("P_Sim = "+str(p_similarity))
-            if diff <= tpl["img_tolerance"]:
+            U_tpl_aligned, best_shift = align_phase(U_input, U_tpl)
+            I_tpl_aligned = np.roll(I_tpl, -int(best_shift))
+
+            # Sai số trung bình tuyệt đối
+            U_error = np.mean(np.abs(U_input - U_tpl_aligned))
+            I_error = np.mean(np.abs(I_input - I_tpl_aligned))
+
+            print(f"U_error = {U_error:.4f}, I_error = {I_error:.4f}")
+
+            # Công suất sai số
+            P_error = U_error * I_error
+
+            # Công suất template (RMS-based))
+            P_tpl =  tpl["P_mean"]
+
+            # Độ giống nhau dựa trên công suất
+            p_similarity_error = min(P_error, P_tpl) / max(P_error, P_tpl)
+            p_similarity_error = 1-p_similarity_error
+            print(f"P_error = {P_error:.4f}, P_tpl = {P_tpl:.4f}, similarity = {p_similarity_error:.4f}")
+
+            if p_similarity_error >= tpl["ui_tolerance"]:
                 return tpl["label"]
+
 
         return "null"

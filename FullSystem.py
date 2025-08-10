@@ -1,17 +1,16 @@
 import pandas as pd
 import numpy as np
 import os
-from Utilis.NILM_Utilis import (CycleInterpolator, CircularBuffer, align_phase, close_curve, 
-                                close_array, calc_prms, plot_to_bw_image, 
+from Utilis.NILM_Utilis import (CycleInterpolator, CircularBuffer, align_phase, calc_prms, 
                                 smooth_savgol, is_right_side_greater, plot_to_bw_image_with_gaussian_dots)
-from DrawUIImage import plt_ui_full, plt_event_window,plt_ui_full_onefig
+from DrawUIImage import plt_event_window,plt_ui_full_onefig
 from Utilis.EventDectection.QUAN import QuanDetector
 from MLP_Predict import MLP_Predict
 from PIL import Image
 from Template_Matcher import TemplateMatcher  
 
 # --- Cấu hình Test ---
-csv_path = r"ElectricDatas\MyData\data csv 2\sacmt_event_tulanh.csv"
+csv_path = r"ElectricDatas\MyData\data csv\sacmt_mayep_maysay_event_quat.csv"
 parts = csv_path.replace("\\", "/").split("/")
 csv_path = os.path.join(*parts)
 df = pd.read_csv(csv_path)
@@ -73,7 +72,7 @@ clf = MLP_Predict(
 )
 
 #Khởi tạo hậu xử lý dữ liệu
-matcher = TemplateMatcher("Template_dataset")
+matcher = TemplateMatcher("")
 
 # Hàm tính ảnh I2 - I1 và gọi hàm vẽ
 def cal_img(start1, start2, idx):
@@ -104,11 +103,14 @@ def cal_img(start1, start2, idx):
     I_LAST_ALIGNED = np.roll(I_LAST, -int(best_shift))
     I_RES = (I_CUR - I_LAST_ALIGNED)
     U_RES = U_CUR
-    I_RES *= is_right_side_greater(I_RES, U_RES)
-    img_np = plot_to_bw_image_with_gaussian_dots(U_RES, I_RES, 32, 32,1,0.3)
+    #I_RES *= is_right_side_greater(I_RES, U_RES)
+    U_RES *= is_right_side_greater(I_RES, U_RES)
+    U_RES = smooth_savgol(U_RES)
+    I_RES = smooth_savgol(I_RES)
+    img_np = plot_to_bw_image_with_gaussian_dots(U_RES, I_RES, 32, 32,1,0.5)
     image = Image.fromarray(img_np, mode='L') 
     label,confidence  = clf.predict(image_input=img_np, p_mean=delta_p_mean)
-    #label = matcher.match(label,delta_p_mean,img_np)
+    label = matcher.match(label,delta_p_mean,U_RES,I_RES)
 
     plt_ui_full_onefig(SAMPLING_RATE, Power,
                 start1, start1 + SAMPLE_PER_IMAGE,
@@ -128,9 +130,9 @@ for idx in range(data_len):
         P_EVENT_BUFFER = []
 
         if event != 0:
-            winDuration *= 2
-            FWD_SEC = 2                  # bao trùm thêm 2 giây sau sự kiện
-            BWD_SEC = winDuration + FWD_SEC
+            #winDuration *= 2
+            FWD_SEC = 0        
+            BWD_SEC = winDuration + FWD_SEC + 3
             
             base = idx
             step = SAMPLE_PER_IMAGE
@@ -143,25 +145,11 @@ for idx in range(data_len):
 
             print(f"[Event] idx={idx}, window: {BWD_SEC}s before, {FWD_SEC}s after, windows size = {winDuration + 2*FWD_SEC}")
 
-            # Duyệt các ảnh sau từ gần end_window
-            for after_i in range((end_window - step - start_window) // step):
-                start2 = end_window - (after_i + 1) * step + 1
-
-                if start2 < 0 or start2 + step > data_len:
-                    continue
-                
-                # Duyệt các ảnh trước từ start_window
-                for before_i in range((end_window - start_window) // step):
-                    start1 = start_window + before_i * step
-
-                    if start1 < 0 or start1 + step > data_len:
-                        continue
-                    
-                    if (start2 - (start1 + step)) < MIN_GAP_LEN:
-                        break
-                    
-                    print(f"  -> start2={start2}, start1={start1}, cách={(start2 - start1)/SAMPLING_RATE:.2f}s")
-                    cal_img(start1, start2, idx)
+            # Chọn đơn giản, chỉ start và end
+            start1 = start_window
+            start2 = end_window
+            if start2 > 0 and start2 + step < data_len and start1 > 0:
+                cal_img(start1, start2, idx)
 
 
 

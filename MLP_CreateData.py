@@ -16,7 +16,7 @@ samples_per_cycle = sampling_rate // frequency
 test_cycles = 100
 interp_factor = 10
 
-mode = 2  # 1 = vẽ biểu đồ, 2 = xuất dữ liệu huấn luyện
+mode = 1  # 1 = chỉ vẽ biểu đồ, 2 = xuất dữ liệu huấn luyện
 device_label = "mayep"  # Nhãn thiết bị
 overwrite_mode = False   # True = ghi đè file CSV, False = ghi thêm nếu đã tồn tại
 
@@ -58,6 +58,7 @@ for i, start in enumerate(range(0, total_samples - step_size + 1, step_size)):
     interp.update_batch(I_seg, U_seg)
     U_avg, I_avg = interp.get_average()
     U_closed, I_closed = close_curve(U_avg, I_avg)
+    #print(len(U_closed))
     img = plot_to_bw_image_with_gaussian_dots(U_closed, I_closed, 32, 32, 2, 0.3)
 
     if mode == 1:

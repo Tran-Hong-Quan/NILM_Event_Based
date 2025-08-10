@@ -3,16 +3,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 from Utilis.NILM_Utilis import CycleInterpolator, close_curve, plot_to_bw_image_with_gaussian_dots
 import os
-from PIL import Image
 import csv
 import time
+import json  # để lưu mảng U/I
 
 # --- Chọn chế độ ---
-mode = 1
+mode = 1 #0 là chỉ ảnh, 1 là cơ lưu vào file
 writeMode = "a"  # a = thêm, w = ghi đè toàn bộ file CSV
 
 # --- Cấu hình ---
-csv_path = r"ElectricDatas\MyData\data csv 2\NO\mayep_event_no.csv"
+csv_path = r"ElectricDatas\MyData\data csv 2\NO\tulanh_event_no.csv"
 parts = csv_path.replace("\\", "/").split("/")
 csv_path = os.path.join(*parts)
 
@@ -22,14 +22,13 @@ samples_per_cycle = sampling_rate // frequency
 interp_factor = 10
 
 # --- Chọn start và end ---
-start_cycle = 4000
-end_cycle = 6000
+start_cycle = 1000
+end_cycle = 5000
 
 # --- Nhãn và sai số ---
-label = "mayep"
+label = "tulanh"
 p_tolerance = 0.7
-img_tolerance = 0.3
-save_dir = "Template_dataset"
+ui_tolerance = 0.7
 
 # --- Đọc dữ liệu ---
 df = pd.read_csv(csv_path)
@@ -55,7 +54,7 @@ U, I = interp.get_average()
 
 P_mean = np.mean(Power[start_idx:end_idx])
 
-# --- Sinh ảnh Gaussian ---
+# --- Sinh ảnh Gaussian (chỉ để hiển thị, không lưu) ---
 U_Closed, I_Closed = close_curve(U, I)
 img = plot_to_bw_image_with_gaussian_dots(U_Closed, I_Closed, 32, 32, 2, 0.3)
 
@@ -84,18 +83,12 @@ axes[2].axis('off')
 plt.tight_layout()
 plt.show()
 
-# --- Lưu ---
+# --- Lưu metadata ---
 if mode == 1:
-    os.makedirs(save_dir, exist_ok=True)
+    # File metadata lưu cùng thư mục code
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    metadata_csv = os.path.join(script_dir, "Template_data.csv")
 
-    # Tạo tên file ảnh duy nhất (thêm timestamp)
-    timestamp = int(time.time() * 1000)
-    img_filename = f"{label}_{timestamp}.png"
-    img_path = os.path.join(save_dir, img_filename)
-    Image.fromarray(img).save(img_path)
-
-    # Lưu metadata, tránh trùng
-    metadata_csv = os.path.join(save_dir, "metadata.csv")
     file_exists = os.path.isfile(metadata_csv)
 
     # Đọc metadata cũ để kiểm tra trùng
@@ -104,14 +97,19 @@ if mode == 1:
         with open(metadata_csv, newline='', encoding='utf-8') as f:
             existing_rows = list(csv.reader(f))
 
-    # Nếu chưa tồn tại dòng giống hệt thì mới thêm
-    new_row = [img_filename, f"{P_mean:.3f}", label, p_tolerance, img_tolerance]
+    # Convert mảng U, I sang chuỗi JSON
+    U_str = json.dumps(U.tolist())
+    I_str = json.dumps(I.tolist())
+
+    # Tạo hàng mới
+    new_row = [f"{label}_{int(time.time()*1000)}", f"{P_mean:.3f}", label, p_tolerance, ui_tolerance, U_str, I_str]
+
     if new_row not in existing_rows:
         with open(metadata_csv, mode=writeMode, newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
             if not file_exists:
-                writer.writerow(["filename", "P_mean", "label", "p_tolerance", "img_tolerance"])
+                writer.writerow(["id", "P_mean", "label", "p_tolerance", "ui_tolerance", "U_array", "I_array"])
             writer.writerow(new_row)
-        print(f"[Saved] {img_path} | P_mean={P_mean:.3f} | Label={label} | P_tol={p_tolerance} | Img_tol={img_tolerance}")
+        print(f"[Saved] P_mean={P_mean:.3f} | Label={label} | U/I arrays saved in Template_data.csv")
     else:
-        print("[Skipped] Dữ liệu này đã tồn tại trong metadata.csv")
+        print("[Skipped] Dữ liệu này đã tồn tại trong Template_data.csv")
