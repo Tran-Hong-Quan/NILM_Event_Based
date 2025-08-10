@@ -28,7 +28,6 @@ end_cycle = 5000
 # --- Nhãn và sai số ---
 label = "tulanh"
 p_tolerance = 0.7
-ui_tolerance = 0.7
 
 # --- Đọc dữ liệu ---
 df = pd.read_csv(csv_path)
@@ -97,19 +96,15 @@ if mode == 1:
         with open(metadata_csv, newline='', encoding='utf-8') as f:
             existing_rows = list(csv.reader(f))
 
-    # Convert mảng U, I sang chuỗi JSON
-    U_str = json.dumps(U.tolist())
-    I_str = json.dumps(I.tolist())
-
     # Tạo hàng mới
-    new_row = [f"{label}_{int(time.time()*1000)}", f"{P_mean:.3f}", label, p_tolerance, ui_tolerance, U_str, I_str]
+    new_row = [f"{label}_{int(time.time()*1000)}", f"{P_mean:.3f}", label, p_tolerance]
 
     if new_row not in existing_rows:
         with open(metadata_csv, mode=writeMode, newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
             if not file_exists:
-                writer.writerow(["id", "P_mean", "label", "p_tolerance", "ui_tolerance", "U_array", "I_array"])
+                writer.writerow(["id", "P_mean", "label", "p_tolerance"])
             writer.writerow(new_row)
-        print(f"[Saved] P_mean={P_mean:.3f} | Label={label} | U/I arrays saved in Template_data.csv")
+        print(f"[Saved] P_mean={P_mean:.3f} | Label={label} saved in Template_data.csv")
     else:
         print("[Skipped] Dữ liệu này đã tồn tại trong Template_data.csv")

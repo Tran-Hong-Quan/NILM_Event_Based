@@ -24,16 +24,12 @@ class TemplateMatcher:
                 self.templates.append({
                     "P_mean": float(row["P_mean"]),
                     "label": row["label"],
-                    "p_tolerance": float(row["p_tolerance"]),
-                    "ui_tolerance": float(row["ui_tolerance"]),
-                    "U_array": np.array(json.loads(row["U_array"])),
-                    "I_array": np.array(json.loads(row["I_array"]))
+                    "p_tolerance": float(row["p_tolerance"])
                 })
 
-    def match(self, label, P_mean, U_input, I_input):
+    def match(self, label, P_mean):
         """
         Trả về label nếu khớp, "null" nếu không khớp.
-        U_input, I_input: numpy array
         """
         for tpl in self.templates:
             # 1. Kiểm tra nhãn
@@ -44,35 +40,7 @@ class TemplateMatcher:
             p_similarity = min(P_mean, tpl["P_mean"]) / max(P_mean, tpl["P_mean"])
             print(f"P_similarity = {p_similarity:.4f}")
 
-            if p_similarity < tpl["p_tolerance"]:
-                continue
-
-            # 3. So sánh U/I sau khi căn pha
-            U_tpl = tpl["U_array"]
-            I_tpl = tpl["I_array"]
-
-            U_tpl_aligned, best_shift = align_phase(U_input, U_tpl)
-            I_tpl_aligned = np.roll(I_tpl, -int(best_shift))
-
-            # Sai số trung bình tuyệt đối
-            U_error = np.mean(np.abs(U_input - U_tpl_aligned))
-            I_error = np.mean(np.abs(I_input - I_tpl_aligned))
-
-            print(f"U_error = {U_error:.4f}, I_error = {I_error:.4f}")
-
-            # Công suất sai số
-            P_error = U_error * I_error
-
-            # Công suất template (RMS-based))
-            P_tpl =  tpl["P_mean"]
-
-            # Độ giống nhau dựa trên công suất
-            p_similarity_error = min(P_error, P_tpl) / max(P_error, P_tpl)
-            p_similarity_error = 1-p_similarity_error
-            print(f"P_error = {P_error:.4f}, P_tpl = {P_tpl:.4f}, similarity = {p_similarity_error:.4f}")
-
-            if p_similarity_error >= tpl["ui_tolerance"]:
-                return tpl["label"]
-
-
+            if p_similarity >= tpl["p_tolerance"]:
+                return tpl["label"] 
+            
         return "null"

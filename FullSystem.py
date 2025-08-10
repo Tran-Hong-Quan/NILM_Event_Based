@@ -2,15 +2,16 @@ import pandas as pd
 import numpy as np
 import os
 from Utilis.NILM_Utilis import (CycleInterpolator, CircularBuffer, align_phase, calc_prms, 
-                                smooth_savgol, is_right_side_greater, plot_to_bw_image_with_gaussian_dots)
+                                smooth_savgol, flip_ui_image, plot_to_bw_image_with_gaussian_dots)
 from DrawUIImage import plt_event_window,plt_ui_full_onefig
 from Utilis.EventDectection.QUAN import QuanDetector
 from MLP_Predict import MLP_Predict
 from PIL import Image
 from Template_Matcher import TemplateMatcher  
+import numpy as np
 
 # --- Cấu hình Test ---
-csv_path = r"ElectricDatas\MyData\data csv\sacmt_mayep_maysay_event_quat.csv"
+csv_path = r"ElectricDatas\MyData\data csv 2\sacmt_event_quat.csv"
 parts = csv_path.replace("\\", "/").split("/")
 csv_path = os.path.join(*parts)
 df = pd.read_csv(csv_path)
@@ -73,6 +74,7 @@ clf = MLP_Predict(
 
 #Khởi tạo hậu xử lý dữ liệu
 matcher = TemplateMatcher("")
+CONFIDENCE_THRESHOLD = .9
 
 # Hàm tính ảnh I2 - I1 và gọi hàm vẽ
 def cal_img(start1, start2, idx):
@@ -103,15 +105,20 @@ def cal_img(start1, start2, idx):
     I_LAST_ALIGNED = np.roll(I_LAST, -int(best_shift))
     I_RES = (I_CUR - I_LAST_ALIGNED)
     U_RES = U_CUR
-    #I_RES *= is_right_side_greater(I_RES, U_RES)
-    U_RES *= is_right_side_greater(I_RES, U_RES)
     U_RES = smooth_savgol(U_RES)
     I_RES = smooth_savgol(I_RES)
+    
     img_np = plot_to_bw_image_with_gaussian_dots(U_RES, I_RES, 32, 32,1,0.5)
+    img_np = flip_ui_image(img_np)
     image = Image.fromarray(img_np, mode='L') 
     label,confidence  = clf.predict(image_input=img_np, p_mean=delta_p_mean)
-    label = matcher.match(label,delta_p_mean,U_RES,I_RES)
-
+    print("MLP label: " + label)
+    label = matcher.match(label,delta_p_mean)
+    # if confidence < CONFIDENCE_THRESHOLD:
+    #     label = "null"
+        
+    # if label == "null":
+    #     return label
     plt_ui_full_onefig(SAMPLING_RATE, Power,
                 start1, start1 + SAMPLE_PER_IMAGE,
                 start2, start2 + SAMPLE_PER_IMAGE,

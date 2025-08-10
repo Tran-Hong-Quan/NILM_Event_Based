@@ -5,6 +5,41 @@ from scipy.signal import savgol_filter
 import numpy as np
 import cv2
 
+def flip_ui_image(img):
+    """
+    Lật ảnh sao cho góc phần tư thứ nhất (Q1 - góc trên phải)
+    có tổng độ đen lớn nhất.
+    
+    Ảnh grayscale 0=đen, 255=trắng.
+    """
+    h, w = img.shape
+    h_mid, w_mid = h // 2, w // 2
+
+    def q1_black_sum(image):
+        # Q1: góc trên phải
+        q1_region = image[0:h_mid, w_mid:w]
+        # Mức đen = 255 - pixel_value
+        return np.sum(255 - q1_region)
+
+    # Các phép lật có thể
+    flips = [
+        img,                                 # giữ nguyên
+        np.flipud(img),                      # lật dọc
+        np.fliplr(img),                      # lật ngang
+        np.flipud(np.fliplr(img))             # lật ngang + dọc
+    ]
+
+    # Chọn ảnh có Q1 đen nhất
+    best_img = None
+    best_sum = -np.inf
+    for candidate in flips:
+        blackness = q1_black_sum(candidate)
+        if blackness > best_sum:
+            best_sum = blackness
+            best_img = candidate.copy()
+
+    return best_img
+
 def draw_gaussian_dot(img, x, y, radius=2, alpha=0.5):
     """
     Vẽ một chấm Gaussian mờ từ tâm tại (x, y) trên ảnh `img`, với bán kính `radius` và độ mờ tối đa `alpha`.
