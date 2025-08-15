@@ -12,7 +12,7 @@ mode = 1 #0 là chỉ ảnh, 1 là cơ lưu vào file
 writeMode = "a"  # a = thêm, w = ghi đè toàn bộ file CSV
 
 # --- Cấu hình ---
-csv_path = r"ElectricDatas\MyData\data csv 2\NO\tulanh_event_no.csv"
+csv_path = r"ElectricDatas\MyData\New\data csv\NO\quat_event_no.csv"
 parts = csv_path.replace("\\", "/").split("/")
 csv_path = os.path.join(*parts)
 
@@ -26,7 +26,7 @@ start_cycle = 1000
 end_cycle = 5000
 
 # --- Nhãn và sai số ---
-label = "tulanh"
+label = "quat"
 p_tolerance = 0.7
 
 # --- Đọc dữ liệu ---

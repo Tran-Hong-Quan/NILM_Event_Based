@@ -40,8 +40,6 @@ class QuanDetector:
 
         # Internal states
         self.avg_win = []
-        self.indexFromLastEvent = 0
-        self.lastEventType = -1
 
     def update(self, value):
         event_output = 0  # No event by default
@@ -56,7 +54,6 @@ class QuanDetector:
             e_lo = self.low_dec.update(avg_val)
             self.avg_win = []
 
-        self.indexFromLastEvent += 1
         currentEventType = -1
         windowDuration = 0
 
@@ -64,22 +61,15 @@ class QuanDetector:
             event_output = ew
             currentEventType = 0
             windowDuration = 1 / self.EVENT_SAMPLING_RATE * self.wamma.last_winSize
+            print("Wamma event")
         elif e_lo != 0:
             event_output = e_lo
             currentEventType = 1
             windowDuration = 1 / self.LOW_DEC_SAMPLING_RATE * self.low_dec.last_winSize
-
-        should_emit = (
-            (event_output != 0 and 
-            ((self.indexFromLastEvent / self.EVENT_SAMPLING_RATE > self.EVENT_TIME_LIMIT_DIF and currentEventType != self.lastEventType) or
-             (self.indexFromLastEvent / self.EVENT_SAMPLING_RATE > self.EVENT_TIME_LIMIT_SAM and currentEventType == self.lastEventType)))
-            or self.lastEventType == -1)
-            
-        if should_emit:
-            self.indexFromLastEvent = 0
-            self.lastEventType = currentEventType
-            self.buffer = []
-        else:
-            event_output = 0
+            print("Low dec event")
 
         return event_output, windowDuration
+    
+    def fake_event(self):
+        self.lastEventType = -1
+    

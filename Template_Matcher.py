@@ -38,7 +38,7 @@ class TemplateMatcher:
 
             # 2. So sánh P_mean
             p_similarity = min(P_mean, tpl["P_mean"]) / max(P_mean, tpl["P_mean"])
-            print(f"P_similarity = {p_similarity:.4f}")
+            #print(f"P_similarity = {p_similarity:.4f}")
 
             if p_similarity >= tpl["p_tolerance"]:
                 return tpl["label"] 

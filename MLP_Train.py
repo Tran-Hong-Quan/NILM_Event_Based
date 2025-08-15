@@ -9,6 +9,7 @@ from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import Dataset, DataLoader
 import joblib
 from MLP import MLP
+import os
 
 # --- Config ---
 csv_path = "MLP_data.csv"
@@ -16,6 +17,7 @@ image_size = 32
 batch_size = 32
 num_epochs = 20
 learning_rate = 0.001
+checkpoint_path = "MLP_checkpoint.pth"
 
 # --- Load CSV ---
 df = pd.read_csv(csv_path)
@@ -61,8 +63,17 @@ model = MLP(img_input_size=image_size*image_size, num_classes=num_classes).to(de
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
+# --- Resume từ checkpoint nếu có ---
+start_epoch = 0
+if os.path.exists(checkpoint_path):
+    checkpoint = torch.load(checkpoint_path, map_location=device)
+    model.load_state_dict(checkpoint["model_state"])
+    optimizer.load_state_dict(checkpoint["optimizer_state"])
+    start_epoch = checkpoint["epoch"] + 1
+    print(f"🔄 Tiếp tục huấn luyện từ epoch {start_epoch+1}")
+
 # --- Training loop ---
-for epoch in range(num_epochs):
+for epoch in range(start_epoch, num_epochs):
     model.train()
     total_loss = 0
     for img, p_mean, label in train_loader:
@@ -90,7 +101,14 @@ for epoch in range(num_epochs):
     acc = 100 * correct / total
     print(f"Epoch {epoch+1}/{num_epochs} | Loss: {total_loss/len(train_dataset):.4f} | Val Acc: {acc:.2f}%")
 
-# --- Save model and label encoder ---
+    # --- Save checkpoint ---
+    torch.save({
+        "epoch": epoch,
+        "model_state": model.state_dict(),
+        "optimizer_state": optimizer.state_dict()
+    }, checkpoint_path)
+
+# --- Save model & label encoder ---
 torch.save(model.state_dict(), "MLP.pth")
 joblib.dump(label_encoder, "MLP_label_encoder.pkl")
-print("✅ Mô hình đã được lưu.")
+print("✅ Mô hình & checkpoint đã được lưu.")

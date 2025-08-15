@@ -9,9 +9,13 @@ from MLP_Predict import MLP_Predict
 from PIL import Image
 from Template_Matcher import TemplateMatcher  
 import numpy as np
+import sys
 
 # --- Cấu hình Test ---
-csv_path = r"ElectricDatas\MyData\data csv 2\sacmt_event_quat.csv"
+if len(sys.argv) > 1:
+    csv_path = sys.argv[1]
+else:
+    csv_path = r"ElectricDatas\MyData\New\data csv\sacmt_mayep_maysay_event_quat.csv"
 parts = csv_path.replace("\\", "/").split("/")
 csv_path = os.path.join(*parts)
 df = pd.read_csv(csv_path)
@@ -33,13 +37,13 @@ WAMMA_WINDOW_SEC = 4        # Cửa sổ wamma
 WAMMA_EDGE_SEC = 1        # Biên wamma
 LOW_DEC_HZ = 1              # Tần số bộ phát hiện sự kiện tần số thấp
 LOW_DEC_WINDOW_SEC = 6      # Cửa số bộ tần số thập
-EVENT_TIME_LIMIT_DIF = 8   # Giới hạn thời gian 2 Event Khác nhau
-EVENT_TIME_LIMIT_SAM = 6    # Giới hạn thời gian 2 Event Giống nhau
+EVENT_TIME_LIMIT_DIF = 11   # Giới hạn thời gian 2 Event Khác nhau
+EVENT_TIME_LIMIT_SAM = 5    # Giới hạn thời gian 2 Event Giống nhau
 WAMMA_P_THRE = 30           # P giới hạn phát hiện sự kiện cho cửa sổ WAMMA
-WAMMA_R_THRE = 2            # R giới hạn phát hiện sự kiện cho WAMMA, càng bé càng nhạy với nhiễu
-LOW_DEC_THRE = 10           # P giới hạn phát hiện sự kiện cho cửa sổ phát hiện sự kiện tần số thấp
+WAMMA_R_THRE = 1            # R giới hạn phát hiện sự kiện cho WAMMA, càng bé càng nhạy với nhiễu
+LOW_DEC_THRE = 20           # P giới hạn phát hiện sự kiện cho cửa sổ phát hiện sự kiện tần số thấp
 KALMAN_Q = 0.01             # Q CỦA BỘ LỌC KALMAN
-KALMAN_R = 1000              # R CỦA BỘ LỌC KALMAN
+KALMAN_R = 100              # R CỦA BỘ LỌC KALMAN
 
 #------------Khởi tạo các tham số ngoài---------------------------------
 SAMPLES_PER_CYCLE = SAMPLING_RATE // FREQUENCY      # Số điểm ở mỗi vòng
@@ -74,7 +78,7 @@ clf = MLP_Predict(
 
 #Khởi tạo hậu xử lý dữ liệu
 matcher = TemplateMatcher("")
-CONFIDENCE_THRESHOLD = .9
+CONFIDENCE_THRESHOLD = .8
 
 # Hàm tính ảnh I2 - I1 và gọi hàm vẽ
 def cal_img(start1, start2, idx):
@@ -83,14 +87,15 @@ def cal_img(start1, start2, idx):
     u1 = U_raw[start1 : start1 + SAMPLE_PER_IMAGE]
     i2 = I_raw[start2 : start2 + SAMPLE_PER_IMAGE]
     u2 = U_raw[start2 : start2 + SAMPLE_PER_IMAGE]
-
+    print(calc_prms(i2,u2))
+    print(calc_prms(i1,u1))
     delta_p_mean = abs(calc_prms(i2,u2) - calc_prms(i1,u1))
     print("Delta P RMS = "  +str(delta_p_mean))
-    if(delta_p_mean < 15) :
+    if delta_p_mean < 15:
         return
 
     if len(i1) < SAMPLE_PER_IMAGE or len(i2) < SAMPLE_PER_IMAGE:
-        print("[Warning] Không đủ mẫu để tạo ảnh.")
+        #print("[Warning] Không đủ mẫu để tạo ảnh.")
         return
 
     LAST_CYCLE = CycleInterpolator(SAMPLES_PER_CYCLE, INTERP_FACTOR)
@@ -108,23 +113,26 @@ def cal_img(start1, start2, idx):
     U_RES = smooth_savgol(U_RES)
     I_RES = smooth_savgol(I_RES)
     
-    img_np = plot_to_bw_image_with_gaussian_dots(U_RES, I_RES, 32, 32,1,0.5)
+    img_np = plot_to_bw_image_with_gaussian_dots(U_RES, I_RES, 32, 32,2,0.3)
     img_np = flip_ui_image(img_np)
     image = Image.fromarray(img_np, mode='L') 
     label,confidence  = clf.predict(image_input=img_np, p_mean=delta_p_mean)
     print("MLP label: " + label)
     label = matcher.match(label,delta_p_mean)
-    # if confidence < CONFIDENCE_THRESHOLD:
-    #     label = "null"
+    if confidence < CONFIDENCE_THRESHOLD:
+        label = "null"
         
     # if label == "null":
     #     return label
-    plt_ui_full_onefig(SAMPLING_RATE, Power,
-                start1, start1 + SAMPLE_PER_IMAGE,
-                start2, start2 + SAMPLE_PER_IMAGE,
-                U_LAST, I_LAST, U_CUR, I_CUR, I_RES,image,delta_p_mean,label,confidence)
+    # plt_ui_full_onefig(SAMPLING_RATE, Power,
+    #             start1, start1 + SAMPLE_PER_IMAGE,
+    #             start2, start2 + SAMPLE_PER_IMAGE,
+    #             U_LAST, I_LAST, U_CUR, I_CUR, I_RES,image,delta_p_mean,label,confidence)
+    if label is None:
+        return "null"
+    return label
     
-
+LABEL = "null"
 # -------------------- Vòng lặp chính --------------------
 for idx in range(data_len):
     i = I_raw[idx]
@@ -139,7 +147,7 @@ for idx in range(data_len):
         if event != 0:
             #winDuration *= 2
             FWD_SEC = 0        
-            BWD_SEC = winDuration + FWD_SEC + 3
+            BWD_SEC = winDuration + 6             
             
             base = idx
             step = SAMPLE_PER_IMAGE
@@ -148,21 +156,18 @@ for idx in range(data_len):
 
             start_window = base - int(BWD_SEC * SAMPLING_RATE)
             end_window   = base + int(FWD_SEC * SAMPLING_RATE)
-            plt_event_window(Power, SAMPLING_RATE, start_window, end_window, idx)
+            #plt_event_window(Power, SAMPLING_RATE, start_window, end_window, idx)
 
-            print(f"[Event] idx={idx}, window: {BWD_SEC}s before, {FWD_SEC}s after, windows size = {winDuration + 2*FWD_SEC}")
+            print(f"[Event] idx={idx}, window: {BWD_SEC}s before, {FWD_SEC}s after, windows size = {winDuration}")
 
             # Chọn đơn giản, chỉ start và end
             start1 = start_window
             start2 = end_window
             if start2 > 0 and start2 + step < data_len and start1 > 0:
-                cal_img(start1, start2, idx)
-
-
-
-
-            
-            
-                
-    
-        
+                label = cal_img(start1, start2, idx)
+                if label == "null" or label is None:
+                    quan.fake_event()
+                else:
+                    LABEL = label
+                    print(f"RESULT_LABEL={LABEL}")
+print(f"RESULT_LABEL={LABEL}")

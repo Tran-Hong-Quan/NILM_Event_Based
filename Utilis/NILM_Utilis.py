@@ -132,7 +132,7 @@ def calc_rms(signal: np.ndarray) -> float:
     return np.sqrt(np.mean(signal**2))
 
 def calc_prms(U: np.ndarray, I: np.ndarray) -> float:
-    return np.mean(U * I)
+    return np.mean(abs(U * I))
 
 def smooth_savgol(signal: np.ndarray, window_length: int = 21, polyorder: int = 3) -> np.ndarray:
     """

@@ -1,12 +1,12 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from Utilis.NILM_Utilis import CycleInterpolator, close_curve, plot_to_bw_image_with_gaussian_dots
+from Utilis.NILM_Utilis import CycleInterpolator, close_curve, plot_to_bw_image_with_gaussian_dots, flip_ui_image
 import os
 from PIL import Image
 
 # --- Cấu hình ---
-csv_path = r"ElectricDatas\MyData\data csv 2\NO\mayep_event_no.csv"
+csv_path = r"ElectricDatas\MyData\New\data csv\NO\tulanh_event_no.csv"
 parts = csv_path.replace("\\", "/").split("/")
 csv_path = os.path.join(*parts)
 
@@ -16,8 +16,8 @@ samples_per_cycle = sampling_rate // frequency
 test_cycles = 100
 interp_factor = 10
 
-mode = 1  # 1 = chỉ vẽ biểu đồ, 2 = xuất dữ liệu huấn luyện
-device_label = "mayep"  # Nhãn thiết bị
+mode = 2  # 1 = chỉ vẽ biểu đồ, 2 = xuất dữ liệu huấn luyện
+device_label = "tulanh"  # Nhãn thiết bị
 overwrite_mode = False   # True = ghi đè file CSV, False = ghi thêm nếu đã tồn tại
 
 # --- Đọc dữ liệu ---
@@ -34,7 +34,7 @@ step_size = test_cycles * samples_per_cycle
 if mode == 2:
     output_folder = "training_images"
     os.makedirs(output_folder, exist_ok=True)
-    output_csv_path = "output_data.csv"
+    output_csv_path = "MLP_data.csv"
 
     if overwrite_mode or not os.path.exists(output_csv_path):
         df_output = pd.DataFrame(columns=["segment_id", "label", "P_mean", "image_path"])
@@ -51,7 +51,7 @@ for i, start in enumerate(range(0, total_samples - step_size + 1, step_size)):
     Power_seg = Power[start:end]
 
     # --- Tính công suất trung bình ---
-    P_mean = np.mean(U_seg * I_seg)
+    P_mean = abs(np.mean(U_seg * I_seg))
 
     # --- Nội suy và tạo ảnh ---
     interp = CycleInterpolator(samples_per_cycle, interp_factor)
@@ -60,6 +60,7 @@ for i, start in enumerate(range(0, total_samples - step_size + 1, step_size)):
     U_closed, I_closed = close_curve(U_avg, I_avg)
     #print(len(U_closed))
     img = plot_to_bw_image_with_gaussian_dots(U_closed, I_closed, 32, 32, 2, 0.3)
+    img = flip_ui_image(img)
 
     if mode == 1:
         # --- Vẽ biểu đồ ---
