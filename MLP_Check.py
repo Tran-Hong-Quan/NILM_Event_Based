@@ -10,10 +10,10 @@ from PIL import Image
 from Template_Matcher import TemplateMatcher  
 
 # -----------------------------Tham số hệ thống------------------------
-SAMPLING_RATE = 1000        # Tần số lấy mẫu
-FREQUENCY = 50              # Tần số lưới điện 
-IMAGE_CYCLE_DURATION = 2    # Thời gian lấy mẫu để tạo ảnh
-INTERP_FACTOR = 10          # Nhân tử nội suy
+SAMPLING_RATE = 1000        
+FREQUENCY = 50              
+IMAGE_CYCLE_DURATION = 2    
+INTERP_FACTOR = 10          
 SAMPLES_PER_CYCLE = SAMPLING_RATE // FREQUENCY
 IMAGE_CYCLES = int(IMAGE_CYCLE_DURATION * FREQUENCY)
 SAMPLE_PER_IMAGE = SAMPLES_PER_CYCLE * IMAGE_CYCLES
@@ -75,27 +75,28 @@ total = 0
 
 for csv_file in csv_files:
     file_name = os.path.basename(csv_file)
-    # Lấy nhãn thật từ tên file (sau "event_")
     if "event_" in file_name:
         true_label = file_name.split("event_")[1].replace(".csv", "")
     else:
         continue  # bỏ qua file không đúng định dạng
 
-    # Đọc dữ liệu
     df = pd.read_csv(csv_file)
     Power = df["Power"].values
     I_raw = df["In"].values
     U_raw = df["Un"].values
 
-    # Chạy thử nghiệm (có thể thay start1, start2 theo nhu cầu)
-    start1 = 50000
-    start2 = 80000
-    pred_label = cal_img(I_raw, U_raw, Power, start1, start2)s
+    # test nhanh, có thể random start
+    start1 = 1000
+    start2 = 5000
+    pred_label = cal_img(I_raw, U_raw, Power, start1, start2)
 
     print(f"File: {file_name}, True: {true_label}, Pred: {pred_label}")
 
-    if pred_label == true_label:
+    if pred_label == true_label:s
         correct += 1
     total += 1
 
-print(f"\nAccuracy: {correct}/{total} = {correct/total:.2%}")
+if total > 0:
+    print(f"\nAccuracy: {correct}/{total} = {correct/total:.2%}")
+else:
+    print("⚠️ Không tìm thấy file CSV hợp lệ (có chứa 'event_') trong thư mục.")
