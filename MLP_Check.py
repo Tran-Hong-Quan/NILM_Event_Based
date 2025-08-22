@@ -2,6 +2,10 @@ import pandas as pd
 import numpy as np
 import os
 import glob
+from sklearn.metrics import classification_report, confusion_matrix
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 from Utilis.NILM_Utilis import (CycleInterpolator, align_phase, calc_prms, 
                                 smooth_savgol, flip_ui_image, plot_to_bw_image_with_gaussian_dots)
 from DrawUIImage import plt_ui_full_onefig
@@ -24,7 +28,7 @@ clf = MLP_Predict(
     label_encoder_path="MLP_label_encoder.pkl"
 )
 matcher = TemplateMatcher("")
-CONFIDENCE_THRESHOLD = 0.8
+CONFIDENCE_THRESHOLD = 0.6
 
 # -----------------------------Hàm xử lý-------------------------------
 def cal_img(I_raw, U_raw, Power, start1, start2):
@@ -37,8 +41,6 @@ def cal_img(I_raw, U_raw, Power, start1, start2):
         return "null"
 
     delta_p_mean = abs(calc_prms(i2,u2) - calc_prms(i1,u1))
-    if delta_p_mean < 15:
-        return "null"
 
     LAST_CYCLE = CycleInterpolator(SAMPLES_PER_CYCLE, INTERP_FACTOR)
     LAST_CYCLE.update_batch(i1, u1)
@@ -59,8 +61,8 @@ def cal_img(I_raw, U_raw, Power, start1, start2):
     image = Image.fromarray(img_np, mode='L') 
 
     label, confidence = clf.predict(image_input=img_np, p_mean=delta_p_mean)
-    label = matcher.match(label, delta_p_mean)
 
+    # Nếu độ tin cậy thấp thì coi như null
     if confidence < CONFIDENCE_THRESHOLD:
         label = "null"
 
@@ -71,33 +73,48 @@ folder_path = os.path.join("ElectricDatas", "MyData", "New", "data csv")
 folder_path = os.path.abspath(folder_path)
 csv_files = glob.glob(os.path.join(folder_path, "*.csv"))
 
-correct = 0
-total = 0
+y_true = []
+y_pred = []
 
 for csv_file in csv_files:
     file_name = os.path.basename(csv_file)
     if "event_" in file_name:
         true_label = file_name.split("event_")[1].replace(".csv", "")
     else:
-        continue  # bỏ qua file không đúng định dạng
+        continue  
 
     df = pd.read_csv(csv_file)
     Power = df["Power"].values
     I_raw = df["In"].values
     U_raw = df["Un"].values
 
-    # test nhanh, có thể random start
-    start1 = 1000
-    start2 = 5000
+    # test nhanh
+    start1 = 60000
+    start2 = 80000
     pred_label = cal_img(I_raw, U_raw, Power, start1, start2)
 
     print(f"File: {file_name}, True: {true_label}, Pred: {pred_label}")
+    # plt_ui_full_onefig(SAMPLING_RATE, Power,
+    #             start1, start1 + SAMPLE_PER_IMAGE,
+    #             start2, start2 + SAMPLE_PER_IMAGE,
+    #             U_LAST, I_LAST, U_CUR, I_CUR, I_RES,image,delta_p_mean,label,confidence)
 
-    if pred_label == true_label:s
-        correct += 1
-    total += 1
+    y_true.append(true_label)
+    y_pred.append(pred_label)
 
-if total > 0:
-    print(f"\nAccuracy: {correct}/{total} = {correct/total:.2%}")
+# -----------------------------Đánh giá mô hình------------------------
+if len(y_true) > 0:
+    print("\n📊 Classification Report:")
+    print(classification_report(y_true, y_pred, zero_division=0))
+
+    cm = confusion_matrix(y_true, y_pred, labels=sorted(set(y_true + y_pred)))
+    plt.figure(figsize=(8,6))
+    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", 
+                xticklabels=sorted(set(y_true + y_pred)), 
+                yticklabels=sorted(set(y_true + y_pred)))
+    plt.xlabel("Predicted")
+    plt.ylabel("True")
+    plt.title("Confusion Matrix")
+    plt.show()
 else:
-    print("⚠️ Không tìm thấy file CSV hợp lệ (có chứa 'event_') trong thư mục.")
+    print("⚠️ Không có file CSV hợp lệ để đánh giá.")
