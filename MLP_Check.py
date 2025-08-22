@@ -67,7 +67,8 @@ def cal_img(I_raw, U_raw, Power, start1, start2):
     return label
 
 # -----------------------------Chạy toàn bộ file------------------------
-folder_path = r"ElectricDatas\MyData\New\data csv"
+folder_path = os.path.join("ElectricDatas", "MyData", "New", "data csv")
+folder_path = os.path.abspath(folder_path)
 csv_files = glob.glob(os.path.join(folder_path, "*.csv"))
 
 correct = 0
