@@ -63,8 +63,12 @@ def cal_img(I_raw, U_raw, Power, start1, start2):
     label, confidence = clf.predict(image_input=img_np, p_mean=delta_p_mean)
 
     # Nếu độ tin cậy thấp thì coi như null
-    if confidence < CONFIDENCE_THRESHOLD:
-        label = "null"
+    # if confidence < CONFIDENCE_THRESHOLD:
+    #     label = "null"
+    # plt_ui_full_onefig(SAMPLING_RATE, Power,
+    #             start1, start1 + SAMPLE_PER_IMAGE,
+    #             start2, start2 + SAMPLE_PER_IMAGE,
+    #             U_LAST, I_LAST, U_CUR, I_CUR, I_RES,image,delta_p_mean,label,confidence)
 
     return label
 
