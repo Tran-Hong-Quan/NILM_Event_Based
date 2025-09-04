@@ -7,7 +7,7 @@ import seaborn as sns
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
 # ==== Thư mục CSV ====
-folder_path = r"ElectricDatas\MyData\New\data csv"
+folder_path = os.path.join("ElectricDatas", "MyData", "New", "data csv")
 
 # ==== Danh sách lưu kết quả ====
 true_labels_list = []

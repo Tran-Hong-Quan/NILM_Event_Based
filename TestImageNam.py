@@ -11,7 +11,7 @@ csv_path = os.path.join(*parts)
 sampling_rate = 1000
 frequency = 50
 samples_per_cycle = sampling_rate // frequency
-test_cycles = 50
+test_cycles = 100
 interp_factor = 10
 
 delay1 = 62 * frequency

@@ -15,7 +15,7 @@ import os
 csv_path = "MLP_data.csv"
 image_size = 32
 batch_size = 32
-num_epochs = 20
+num_epochs = 25
 learning_rate = 0.001
 checkpoint_path = "MLP_checkpoint.pth"
 

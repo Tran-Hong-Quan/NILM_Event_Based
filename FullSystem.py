@@ -15,7 +15,7 @@ import sys
 if len(sys.argv) > 1:
     csv_path = sys.argv[1]
 else:
-    csv_path = r"ElectricDatas\MyData\New\data csv\sacmt_mayep_maysay_event_quat.csv"
+    csv_path = r"ElectricDatas\MyData\New\data csv\quat_sacmt_mayep_tulanh_event_maysay.csv"
 parts = csv_path.replace("\\", "/").split("/")
 csv_path = os.path.join(*parts)
 df = pd.read_csv(csv_path)
@@ -122,12 +122,12 @@ def cal_img(start1, start2, idx):
     if confidence < CONFIDENCE_THRESHOLD:
         label = "null"
         
-    # if label == "null":
-    #     return label
-    # plt_ui_full_onefig(SAMPLING_RATE, Power,
-    #             start1, start1 + SAMPLE_PER_IMAGE,
-    #             start2, start2 + SAMPLE_PER_IMAGE,
-    #             U_LAST, I_LAST, U_CUR, I_CUR, I_RES,image,delta_p_mean,label,confidence)
+    if label == "null":
+        return label
+    plt_ui_full_onefig(SAMPLING_RATE, Power,
+                start1, start1 + SAMPLE_PER_IMAGE,
+                start2, start2 + SAMPLE_PER_IMAGE,
+                U_LAST, I_LAST, U_CUR, I_CUR, I_RES,image,delta_p_mean,label,confidence)
     if label is None:
         return "null"
     return label
@@ -169,5 +169,5 @@ for idx in range(data_len):
                     quan.fake_event()
                 else:
                     LABEL = label
-                    print(f"RESULT_LABEL={LABEL}")
+                    #print(f"RESULT_LABEL={LABEL}")
 print(f"RESULT_LABEL={LABEL}")

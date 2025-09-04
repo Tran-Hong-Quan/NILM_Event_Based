@@ -12,6 +12,8 @@ class MLP(nn.Module):
             nn.Linear(256, 128),
             nn.ReLU(),
             nn.Linear(128, 64),
+            nn.ReLU(),
+            nn.Linear(64, 32),
             nn.ReLU()
         )
         self.p_branch = nn.Sequential(
@@ -21,9 +23,9 @@ class MLP(nn.Module):
             nn.ReLU()
         )
         self.classifier = nn.Sequential(
-            nn.Linear(64 + 16, 64),
+            nn.Linear(32 + 16, 32),
             nn.ReLU(),
-            nn.Linear(64, num_classes)
+            nn.Linear(32, num_classes)
         )
 
     def forward(self, img, p_mean):
