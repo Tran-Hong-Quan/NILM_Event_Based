@@ -15,7 +15,7 @@ import sys
 if len(sys.argv) > 1:
     csv_path = sys.argv[1]
 else:
-    csv_path = r"ElectricDatas\MyData\New\data csv\quat_sacmt_mayep_tulanh_event_maysay.csv"
+    csv_path = r"ElectricDatas\MyData\New\data csv\quat_mayep_maysay_event_sacmt.csv"
 parts = csv_path.replace("\\", "/").split("/")
 csv_path = os.path.join(*parts)
 df = pd.read_csv(csv_path)
@@ -23,6 +23,8 @@ Power = df["Power"].values
 I_raw = df["In"].values
 U_raw = df["Un"].values
 data_len = len(I_raw)
+true_event_name = os.path.basename(csv_path).split("event_")[-1].replace(".csv", "")
+print("True event="+true_event_name)
 
 # -----------------------------Tham số hệ thống------------------------
 SAMPLING_RATE = 1000        # Tần lấy mẫu bộ đo
@@ -43,7 +45,7 @@ WAMMA_P_THRE = 30           # P giới hạn phát hiện sự kiện cho cửa 
 WAMMA_R_THRE = 1            # R giới hạn phát hiện sự kiện cho WAMMA, càng bé càng nhạy với nhiễu
 LOW_DEC_THRE = 20           # P giới hạn phát hiện sự kiện cho cửa sổ phát hiện sự kiện tần số thấp
 KALMAN_Q = 0.01             # Q CỦA BỘ LỌC KALMAN
-KALMAN_R = 100              # R CỦA BỘ LỌC KALMAN
+KALMAN_R = 1000              # R CỦA BỘ LỌC KALMAN
 
 #------------Khởi tạo các tham số ngoài---------------------------------
 SAMPLES_PER_CYCLE = SAMPLING_RATE // FREQUENCY      # Số điểm ở mỗi vòng
@@ -54,6 +56,7 @@ I_BUFFER = CircularBuffer(BUFFER_LEN)               # Mảng lưu trữ I của 
 U_BUFFER = CircularBuffer(BUFFER_LEN)               # Mảng lưu trư U của hệ thống đo
 P_EVENT_BUFFER = []                                 # Mảng lưu giá trị tính trung bình cho bộ phát hiện sự kiên
 P_EVENT_BUFFER_LEN = SAMPLING_RATE // EVENT_SAMPLING_RATE   # Độ dài buffer cho tính trung bình công suất cho phát hiện sự kiến
+
 # Khởi tạo bộ phát hiện sự kiện
 quan = QuanDetector(event_sampling_rate = EVENT_SAMPLING_RATE,
                     wamma_window_sec = WAMMA_WINDOW_SEC,
@@ -78,19 +81,19 @@ clf = MLP_Predict(
 
 #Khởi tạo hậu xử lý dữ liệu
 matcher = TemplateMatcher("")
-CONFIDENCE_THRESHOLD = .8
+CONFIDENCE_THRESHOLD = .5
 
 # Hàm tính ảnh I2 - I1 và gọi hàm vẽ
-def cal_img(start1, start2, idx):
+def cal_img(start1, start2):
     #print(SAMPLE_PER_IMAGE)
     i1 = I_raw[start1 : start1 + SAMPLE_PER_IMAGE]
     u1 = U_raw[start1 : start1 + SAMPLE_PER_IMAGE]
     i2 = I_raw[start2 : start2 + SAMPLE_PER_IMAGE]
     u2 = U_raw[start2 : start2 + SAMPLE_PER_IMAGE]
-    print(calc_prms(i2,u2))
-    print(calc_prms(i1,u1))
+    #print(calc_prms(i2,u2))
+    #print(calc_prms(i1,u1))
     delta_p_mean = abs(calc_prms(i2,u2) - calc_prms(i1,u1))
-    print("Delta P RMS = "  +str(delta_p_mean))
+    #print("Delta P RMS = "  +str(delta_p_mean))
     if delta_p_mean < 15:
         return
 
@@ -106,7 +109,7 @@ def cal_img(start1, start2, idx):
     U_LAST, I_LAST = LAST_CYCLE.get_average()
     U_CUR, I_CUR = CURRENT_CYCLE.get_average()
 
-    U_LAST_ALIGNED, best_shift = align_phase(U_CUR, U_LAST)
+    _, best_shift = align_phase(U_CUR, U_LAST)
     I_LAST_ALIGNED = np.roll(I_LAST, -int(best_shift))
     I_RES = (I_CUR - I_LAST_ALIGNED)
     U_RES = U_CUR
@@ -119,55 +122,105 @@ def cal_img(start1, start2, idx):
     label,confidence  = clf.predict(image_input=img_np, p_mean=delta_p_mean)
     print("MLP label: " + label)
     label = matcher.match(label,delta_p_mean)
+    # plt_ui_full_onefig(SAMPLING_RATE, Power,
+    #             start1, start1 + SAMPLE_PER_IMAGE,
+    #             start2, start2 + SAMPLE_PER_IMAGE,
+    #             U_LAST, I_LAST, U_CUR, I_CUR, I_RES,image,delta_p_mean,label,confidence)
     if confidence < CONFIDENCE_THRESHOLD:
         label = "null"
-        
-    if label == "null":
-        return label
-    plt_ui_full_onefig(SAMPLING_RATE, Power,
-                start1, start1 + SAMPLE_PER_IMAGE,
-                start2, start2 + SAMPLE_PER_IMAGE,
-                U_LAST, I_LAST, U_CUR, I_CUR, I_RES,image,delta_p_mean,label,confidence)
-    if label is None:
-        return "null"
     return label
     
 LABEL = "null"
 # -------------------- Vòng lặp chính --------------------
+
+EVENT_TYPE_LIMITS = {
+    0: 6,   # WAMMA
+    1: 12    # LowDec
+}
+EVENT_WAMMA_2_LOWDEC_LIMITS = 10 # Nếu event trước là wamma thì limit thời gian lowdec
+EVENT_LOWDEC_2_WAMMA_LIMITS = 1 # Nếu event trước là lowdec thì limit thời gian wamma
+last_event_time = -1
+last_event_type = -1
+last_label = "null"
+last_event_P_Mean = 0
+
 for idx in range(data_len):
     i = I_raw[idx]
     u = U_raw[idx]
-    p = i * u
+    p = abs(i * u)
     P_EVENT_BUFFER.append(p)
 
     if len(P_EVENT_BUFFER) == P_EVENT_BUFFER_LEN:
-        event,winDuration = quan.update(np.mean(P_EVENT_BUFFER))
+        event, winDuration, eventType = quan.update(np.mean(P_EVENT_BUFFER))
         P_EVENT_BUFFER = []
 
         if event != 0:
-            #winDuration *= 2
             FWD_SEC = 0        
             BWD_SEC = winDuration + 6             
-            
             base = idx
             step = SAMPLE_PER_IMAGE
-            MIN_GAP_SEC = 4
-            MIN_GAP_LEN = int(MIN_GAP_SEC * SAMPLING_RATE)
+            start1 = base - int(BWD_SEC * SAMPLING_RATE)
+            start2 = base + int(FWD_SEC * SAMPLING_RATE)
 
-            start_window = base - int(BWD_SEC * SAMPLING_RATE)
-            end_window   = base + int(FWD_SEC * SAMPLING_RATE)
-            #plt_event_window(Power, SAMPLING_RATE, start_window, end_window, idx)
-
-            print(f"[Event] idx={idx}, window: {BWD_SEC}s before, {FWD_SEC}s after, windows size = {winDuration}")
-
-            # Chọn đơn giản, chỉ start và end
-            start1 = start_window
-            start2 = end_window
             if start2 > 0 and start2 + step < data_len and start1 > 0:
-                label = cal_img(start1, start2, idx)
+                label = cal_img(start1, start2)
+                P_Mean = calc_prms(U_raw[start2 : start2 + SAMPLE_PER_IMAGE],I_raw[start2 : start2 + SAMPLE_PER_IMAGE])
+                #print("P_Mean = " + str(P_Mean))
+
                 if label == "null" or label is None:
                     quan.fake_event()
-                else:
-                    LABEL = label
-                    #print(f"RESULT_LABEL={LABEL}")
+                    continue
+
+                # --- Kiểm tra thời gian giới hạn ---
+                delta_time = (idx - last_event_time) / SAMPLING_RATE
+                accept_event = True
+
+                if last_event_time >= 0:  # phải có event trước mới so sánh được
+                    # 1. Cùng loại + cùng label
+                    if last_event_type == eventType and label == last_label:
+                        limit_time = EVENT_TYPE_LIMITS.get(eventType, 10)
+                        if delta_time < limit_time:
+                            #print(f"[Fake Event] quá gần (Δt={delta_time:.2f}s), cùng loại & cùng label {label}")
+                            quan.fake_event()
+                            accept_event = False
+
+                    # 2. Khác loại + cùng label
+                    elif last_event_type != eventType and label == last_label:
+                        if eventType == 0:
+                            limit_time = EVENT_LOWDEC_2_WAMMA_LIMITS
+                        else:
+                            limit_time = EVENT_WAMMA_2_LOWDEC_LIMITS
+                        if delta_time < limit_time and abs(last_event_P_Mean - P_Mean) / P_Mean < .2:
+                            #print(f"[Fake Event] quá gần (Δt={delta_time:.2f}s), khác loại nhưng cùng label {label}")
+                            quan.fake_event()
+                            accept_event = False
+
+                    # 3. Label khác nhau, nhưng P_Mean gần giống
+                    elif label != last_label and abs(last_event_P_Mean - P_Mean) / P_Mean < .2:
+                        if eventType == last_event_type:
+                            limit_time = EVENT_TYPE_LIMITS.get(eventType, 10)
+                        else:
+                            if eventType == 0:
+                                limit_time = EVENT_LOWDEC_2_WAMMA_LIMITS
+                            else:
+                                limit_time = EVENT_WAMMA_2_LOWDEC_LIMITS
+                        if delta_time < limit_time:
+                            #print(f"[Fake Event] Δt={delta_time:.2f}s, label khác ({last_label}→{label}) nhưng P_Mean gần giống")
+                            quan.fake_event()
+                            accept_event = False
+
+                # Nếu event thật
+                if accept_event:
+                    last_event_time = idx
+                    last_event_type = eventType
+                    last_label = label
+                    last_event_P_Mean = P_Mean
+                    #print(f"[Real Event] idx={idx}, label={label}, type={eventType}, Δt={(0 if last_event_time<0 else delta_time):.2f}s")
+                    
+                    if label != "null":  
+                        LABEL = label
+                    # Cho chạy MLP thôi
+                    if LABEL == true_event_name:
+                        break
+                        
 print(f"RESULT_LABEL={LABEL}")

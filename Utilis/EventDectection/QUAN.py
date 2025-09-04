@@ -54,7 +54,7 @@ class QuanDetector:
             e_lo = self.low_dec.update(avg_val)
             self.avg_win = []
 
-        currentEventType = -1
+        eventType = -1
         windowDuration = 0
 
         if ew != 0:
@@ -62,13 +62,15 @@ class QuanDetector:
             currentEventType = 0
             windowDuration = 1 / self.EVENT_SAMPLING_RATE * self.wamma.last_winSize
             print("Wamma event")
+            eventType = 0
         elif e_lo != 0:
             event_output = e_lo
             currentEventType = 1
             windowDuration = 1 / self.LOW_DEC_SAMPLING_RATE * self.low_dec.last_winSize
             print("Low dec event")
+            eventType = 1
 
-        return event_output, windowDuration
+        return event_output, windowDuration, eventType
     
     def fake_event(self):
         self.lastEventType = -1
