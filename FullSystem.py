@@ -10,12 +10,15 @@ from PIL import Image
 from Template_Matcher import TemplateMatcher  
 import numpy as np
 import sys
+import config
 
 # --- Cấu hình Test ---
+isChecking = False
 if len(sys.argv) > 1:
     csv_path = sys.argv[1]
 else:
-    csv_path = r"ElectricDatas\MyNewData\data_26_sacmt_event_on_tulanh.csv"
+    csv_path = r"ElectricDatas\MyNewData\data_28_event_on_tulanh.csv"
+    isChecking = True
 parts = csv_path.replace("\\", "/").split("/")
 csv_path = os.path.join(*parts)
 df = pd.read_csv(csv_path)
@@ -102,7 +105,7 @@ def cal_img(start1, start2):
     #print(calc_prms(i1,u1))
     delta_p_mean = abs(calc_prms(i2,u2) - calc_prms(i1,u1))
     #print("Delta P RMS = "  +str(delta_p_mean))
-    if delta_p_mean < 0:
+    if delta_p_mean < 15:
         return
 
     if len(i1) < SAMPLE_PER_IMAGE or len(i2) < SAMPLE_PER_IMAGE:
@@ -124,18 +127,19 @@ def cal_img(start1, start2):
     U_RES = smooth_savgol(U_RES)
     I_RES = smooth_savgol(I_RES)
     
-    img_np = plot_to_bw_image_with_gaussian_dots(U_RES, I_RES, 32, 32,2,0.3)
+    img_np = plot_to_bw_image_with_gaussian_dots(U_RES, I_RES, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_RADIUS)
     img_np = flip_ui_image(img_np)
     label,confidence  = clf.predict(image_input=img_np, p_mean=delta_p_mean)
     print("MLP label: " + str(label))
     if label == None:
         label = "null"
     label = matcher.match(label,delta_p_mean)
-    image = Image.fromarray(img_np, mode='L') 
-    plt_ui_full_onefig(SAMPLING_RATE, Power,
-                start1, start1 + SAMPLE_PER_IMAGE,
-                start2, start2 + SAMPLE_PER_IMAGE,
-                U_LAST, I_LAST, U_CUR, I_CUR, I_RES,image,delta_p_mean,label,confidence)
+    if isChecking:
+        image = Image.fromarray(img_np, mode='L') 
+        plt_ui_full_onefig(SAMPLING_RATE, Power,
+                    start1, start1 + SAMPLE_PER_IMAGE,
+                    start2, start2 + SAMPLE_PER_IMAGE,
+                    U_LAST, I_LAST, U_CUR, I_CUR, I_RES,image,delta_p_mean,label,confidence)
     if confidence < CONFIDENCE_THRESHOLD:
         label = "null"
     return label
@@ -232,8 +236,11 @@ for idx in range(data_len):
                     last_event_P_Mean = P_Mean
                     #print(f"[Real Event] idx={idx}, label={label}, type={eventType}, Δt={(0 if last_event_time<0 else delta_time):.2f}s")
                     evt_count += 1
-                    if label != "null" and LABEL != device:  
+                    if label != "null":  
                         LABEL = label
-                        print(f"RESULT_LABEL={LABEL}")
+                        if LABEL == device:
+                            print(f"RESULT_LABEL={LABEL}")
                         
 #print("Event_count="+str(evt_count))
+if device != LABEL:
+    print(f"RESULT_LABEL={LABEL}")

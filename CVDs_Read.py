@@ -4,6 +4,7 @@ import numpy as np
 from Utilis.NILM_Utilis import (
     plot_to_bw_image_with_gaussian_dots,calc_prms
 )
+import config
 
 sampling_rate = 1000
 frequency = 50
@@ -36,7 +37,7 @@ for batch_start in range(0, len(U_CVDS), batch_size):
         P_mean = calc_prms(U_CVD, I_CVD)
 
         # tạo ảnh từ dữ liệu
-        img = plot_to_bw_image_with_gaussian_dots(U_CVD, I_CVD, 32, 32, 2, 0.3)
+        img = plot_to_bw_image_with_gaussian_dots(U_CVD, I_CVD, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_RADIUS)
 
         # hiển thị ảnh
         ax.imshow(img, cmap='gray')

@@ -7,9 +7,10 @@ from Utilis.NILM_Utilis import (
 )
 import os
 from PIL import Image
+import config
 
 # --- Cấu hình ---
-csv_path = r"ElectricDatas\MyNewData\NO\tulanh_event_no.csv"
+csv_path = r"ElectricDatas\MyNewData\NO\quat_event_no.csv"
 csv_path = os.path.normpath(csv_path)
 
 sampling_rate = 1000
@@ -18,8 +19,8 @@ samples_per_cycle = sampling_rate // frequency
 test_cycles = 100
 interp_factor = 10
 
-MODE = 2  # 1 = vẽ biểu đồ, 2 = xuất dữ liệu huấn luyện
-CREATE_CVDS = False
+MODE = 1  # 1 = vẽ biểu đồ, 2 = xuất dữ liệu huấn luyện
+CREATE_CVDS = True
 DEVICE_LABEL = "tulanh"
 OVERWRITE_MODE = False # Nên là false
 
@@ -98,7 +99,7 @@ if not CREATE_CVDS:
         U_avg, I_avg = interp.get_average()
         U_closed, I_closed = close_curve(U_avg, I_avg)
 
-        img = flip_ui_image(plot_to_bw_image_with_gaussian_dots(U_closed, I_closed, 32, 32, 2, 0.3))
+        img = flip_ui_image(plot_to_bw_image_with_gaussian_dots(U_closed, I_closed,config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_RADIUS))
 
         if MODE == 1:
             plot_results(i, P_mean, U_closed, I_closed, img, start, end)
@@ -123,7 +124,7 @@ else:
         U_AVG, I_AVG = U_avg.copy(), I_avg.copy()
         I_AVG += I_CVD
 
-        img = flip_ui_image(plot_to_bw_image_with_gaussian_dots(U_AVG, I_AVG, 32, 32, 2, 0.3))
+        img = flip_ui_image(plot_to_bw_image_with_gaussian_dots(U_AVG, I_AVG, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_RADIUS))
         P_mean = calc_prms(U_AVG, I_AVG)
 
         if MODE == 1:

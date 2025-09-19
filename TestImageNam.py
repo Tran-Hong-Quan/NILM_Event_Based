@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from Utilis.NILM_Utilis import CycleInterpolator, align_phase, close_curve, close_array, calc_prms, plot_to_bw_image_with_gaussian_dots, smooth_savgol, is_right_side_greater 
 import os
+import config
 
 # --- Cấu hình ---
 csv_path = r"ElectricDatas\MyData\data csv\sacmt_maysay_tulanh_event_mayep.csv"
@@ -120,7 +121,7 @@ plt.legend()
 plt.tight_layout()
 
 plt.figure(figsize=(6, 6))
-img = plot_to_bw_image_with_gaussian_dots(U2_closed, I_diff_closed,32,32 ,2, 0.3)
+img = plot_to_bw_image_with_gaussian_dots(U2_closed, I_diff_closed,config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_RADIUS)
 plt.title("Ảnh I2 - I1")
 plt.imshow(img, cmap='gray')
 plt.tight_layout()

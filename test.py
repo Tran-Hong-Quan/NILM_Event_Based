@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from Utilis.NILM_Utilis import plot_to_bw_image_with_gaussian_dots ,flip_ui_image
 from PIL import Image
 import numpy as np
+import config
+
 def load_image_from_path(path: str, grayscale=True) -> np.ndarray:
     # Mở ảnh bằng PIL
     img = Image.open(path)

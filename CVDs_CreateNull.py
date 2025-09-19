@@ -8,6 +8,7 @@ from Utilis.NILM_Utilis import (
 )
 import os
 from PIL import Image
+import config
 
 # --- Cấu hình ---
 sampling_rate = 1000
@@ -42,7 +43,7 @@ for i, (U_CVD, I_CVD) in enumerate(zip(U_CVDS, I_CVDS)):
     P_mean = calc_prms(U_CVD, I_CVD)
 
     # --- Sinh ảnh Gaussian ---
-    img = plot_to_bw_image_with_gaussian_dots(U_CVD, I_CVD, 32, 32, 2, 0.3)
+    img = plot_to_bw_image_with_gaussian_dots(U_CVD, I_CVD, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_RADIUS)
     img = flip_ui_image(img)
 
     if mode == 1:

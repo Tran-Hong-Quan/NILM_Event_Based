@@ -6,6 +6,7 @@ from Utilis.NILM_Utilis import (
     CycleInterpolator, align_phase, calc_prms, 
     plot_to_bw_image_with_gaussian_dots, flip_ui_image, is_right_side_greater
 )
+import config
 
 # --- Cấu hình ---
 maxCvdCounts = 50
@@ -49,7 +50,7 @@ def process_pair(delay1, delay2, I_raw, U_raw):
 
     delta_P_mean = calc_prms(U2, I_diff)
     if delta_P_mean > 7:
-        img = plot_to_bw_image_with_gaussian_dots(U2, I_diff, 32, 32, 2, 0.3)
+        img = plot_to_bw_image_with_gaussian_dots(U2, I_diff, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_RADIUS)
         img = flip_ui_image(img)
         return U2, I_diff
     return None
