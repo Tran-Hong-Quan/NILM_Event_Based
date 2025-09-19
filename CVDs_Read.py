@@ -12,7 +12,7 @@ interp_factor = 10
 
 
 #Đọc lại file
-data = np.load("CVDs/all_cycles.npz", allow_pickle=True)
+data = np.load("CVDs/all_cycles2.npz", allow_pickle=True)
 U_CVDS = data["U_CVDS"]
 I_CVDS = data["I_CVDS"]
 

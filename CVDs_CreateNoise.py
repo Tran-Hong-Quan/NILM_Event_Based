@@ -10,8 +10,8 @@ import os
 from DrawUIImage import plt_ui_full_onefig
 
 # --- Cấu hình ---
-maxCvdCounts = 50
-csv_path = r"ElectricDatas\MyData\data csv 2\NO\sacmt_event_no.csv"
+maxCvdCounts = 100
+csv_path = r"ElectricDatas\MyNewData\NO\sacmt_event_no.csv"
 parts = csv_path.replace("\\", "/").split("/")
 csv_path = os.path.join(*parts)
 sampling_rate = 1000
@@ -66,10 +66,10 @@ for delay1 in range(0, total_cycles - test_cycles, test_cycles):
         # --- Tính toán ---
         delta_P_mean = calc_prms(U2,I_diff)
         print(delta_P_mean)
-        if delta_P_mean > 5:
-            #img = plot_to_bw_image_with_gaussian_dots(U2, I_diff, 32, 32, 2, 0.3)
-            #img = flip_ui_image(img)
-            # --- Vẽ / Lưu ---
+        if delta_P_mean > 7:
+            img = plot_to_bw_image_with_gaussian_dots(U2, I_diff, 32, 32, 2, 0.3)
+            img = flip_ui_image(img)
+            #--- Vẽ / Lưu ---
             # plt_ui_full_onefig(
             #     sampling_rate, Power,
             #     start1, end1, start2, end2,

@@ -15,7 +15,7 @@ import sys
 if len(sys.argv) > 1:
     csv_path = sys.argv[1]
 else:
-    csv_path = r"ElectricDatas\MyData\New\data csv\quat_mayep_maysay_event_sacmt.csv"
+    csv_path = r"ElectricDatas\MyNewData\data_26_sacmt_event_on_tulanh.csv"
 parts = csv_path.replace("\\", "/").split("/")
 csv_path = os.path.join(*parts)
 df = pd.read_csv(csv_path)
@@ -23,8 +23,16 @@ Power = df["Power"].values
 I_raw = df["In"].values
 U_raw = df["Un"].values
 data_len = len(I_raw)
-true_event_name = os.path.basename(csv_path).split("event_")[-1].replace(".csv", "")
-print("True event="+true_event_name)
+
+#Lấy dữ liệu event
+filename = os.path.basename(csv_path)
+filename_no_ext = os.path.splitext(filename)[0]  # bỏ .csv
+parts = filename_no_ext.split("_")
+event_index = parts.index("event")
+state = parts[event_index + 1]      # "on" hoặc "off"
+device = parts[event_index + 2]     # thiết bị chính
+#print("Trạng thái:", state)
+#print("Thiết bị:", device)
 
 # -----------------------------Tham số hệ thống------------------------
 SAMPLING_RATE = 1000        # Tần lấy mẫu bộ đo
@@ -45,7 +53,7 @@ WAMMA_P_THRE = 30           # P giới hạn phát hiện sự kiện cho cửa 
 WAMMA_R_THRE = 1            # R giới hạn phát hiện sự kiện cho WAMMA, càng bé càng nhạy với nhiễu
 LOW_DEC_THRE = 20           # P giới hạn phát hiện sự kiện cho cửa sổ phát hiện sự kiện tần số thấp
 KALMAN_Q = 0.01             # Q CỦA BỘ LỌC KALMAN
-KALMAN_R = 1000              # R CỦA BỘ LỌC KALMAN
+KALMAN_R = 100              # R CỦA BỘ LỌC KALMAN
 
 #------------Khởi tạo các tham số ngoài---------------------------------
 SAMPLES_PER_CYCLE = SAMPLING_RATE // FREQUENCY      # Số điểm ở mỗi vòng
@@ -94,7 +102,7 @@ def cal_img(start1, start2):
     #print(calc_prms(i1,u1))
     delta_p_mean = abs(calc_prms(i2,u2) - calc_prms(i1,u1))
     #print("Delta P RMS = "  +str(delta_p_mean))
-    if delta_p_mean < 15:
+    if delta_p_mean < 0:
         return
 
     if len(i1) < SAMPLE_PER_IMAGE or len(i2) < SAMPLE_PER_IMAGE:
@@ -118,14 +126,16 @@ def cal_img(start1, start2):
     
     img_np = plot_to_bw_image_with_gaussian_dots(U_RES, I_RES, 32, 32,2,0.3)
     img_np = flip_ui_image(img_np)
-    image = Image.fromarray(img_np, mode='L') 
     label,confidence  = clf.predict(image_input=img_np, p_mean=delta_p_mean)
-    print("MLP label: " + label)
+    print("MLP label: " + str(label))
+    if label == None:
+        label = "null"
     label = matcher.match(label,delta_p_mean)
-    # plt_ui_full_onefig(SAMPLING_RATE, Power,
-    #             start1, start1 + SAMPLE_PER_IMAGE,
-    #             start2, start2 + SAMPLE_PER_IMAGE,
-    #             U_LAST, I_LAST, U_CUR, I_CUR, I_RES,image,delta_p_mean,label,confidence)
+    image = Image.fromarray(img_np, mode='L') 
+    plt_ui_full_onefig(SAMPLING_RATE, Power,
+                start1, start1 + SAMPLE_PER_IMAGE,
+                start2, start2 + SAMPLE_PER_IMAGE,
+                U_LAST, I_LAST, U_CUR, I_CUR, I_RES,image,delta_p_mean,label,confidence)
     if confidence < CONFIDENCE_THRESHOLD:
         label = "null"
     return label
@@ -138,11 +148,13 @@ EVENT_TYPE_LIMITS = {
     1: 12    # LowDec
 }
 EVENT_WAMMA_2_LOWDEC_LIMITS = 10 # Nếu event trước là wamma thì limit thời gian lowdec
-EVENT_LOWDEC_2_WAMMA_LIMITS = 1 # Nếu event trước là lowdec thì limit thời gian wamma
+EVENT_LOWDEC_2_WAMMA_LIMITS = 5 # Nếu event trước là lowdec thì limit thời gian wamma
 last_event_time = -1
 last_event_type = -1
 last_label = "null"
 last_event_P_Mean = 0
+
+evt_count = 0
 
 for idx in range(data_len):
     i = I_raw[idx]
@@ -183,6 +195,7 @@ for idx in range(data_len):
                             #print(f"[Fake Event] quá gần (Δt={delta_time:.2f}s), cùng loại & cùng label {label}")
                             quan.fake_event()
                             accept_event = False
+                            print("fake event")
 
                     # 2. Khác loại + cùng label
                     elif last_event_type != eventType and label == last_label:
@@ -194,6 +207,7 @@ for idx in range(data_len):
                             #print(f"[Fake Event] quá gần (Δt={delta_time:.2f}s), khác loại nhưng cùng label {label}")
                             quan.fake_event()
                             accept_event = False
+                            print("fake event")
 
                     # 3. Label khác nhau, nhưng P_Mean gần giống
                     elif label != last_label and abs(last_event_P_Mean - P_Mean) / P_Mean < .2:
@@ -208,6 +222,7 @@ for idx in range(data_len):
                             #print(f"[Fake Event] Δt={delta_time:.2f}s, label khác ({last_label}→{label}) nhưng P_Mean gần giống")
                             quan.fake_event()
                             accept_event = False
+                            print("fake event")
 
                 # Nếu event thật
                 if accept_event:
@@ -216,11 +231,9 @@ for idx in range(data_len):
                     last_label = label
                     last_event_P_Mean = P_Mean
                     #print(f"[Real Event] idx={idx}, label={label}, type={eventType}, Δt={(0 if last_event_time<0 else delta_time):.2f}s")
-                    
-                    if label != "null":  
+                    evt_count += 1
+                    if label != "null" and LABEL != device:  
                         LABEL = label
-                    # Cho chạy MLP thôi
-                    if LABEL == true_event_name:
-                        break
+                        print(f"RESULT_LABEL={LABEL}")
                         
-print(f"RESULT_LABEL={LABEL}")
+#print("Event_count="+str(evt_count))

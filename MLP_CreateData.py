@@ -9,7 +9,7 @@ import os
 from PIL import Image
 
 # --- Cấu hình ---
-csv_path = r"ElectricDatas\MyData\New\data csv\NO\quat_event_no.csv"
+csv_path = r"ElectricDatas\MyNewData\NO\tulanh_event_no.csv"
 csv_path = os.path.normpath(csv_path)
 
 sampling_rate = 1000
@@ -18,10 +18,10 @@ samples_per_cycle = sampling_rate // frequency
 test_cycles = 100
 interp_factor = 10
 
-mode = 2  # 1 = vẽ biểu đồ, 2 = xuất dữ liệu huấn luyện
-createCVDs = True
-device_label = "quat"
-overwrite_mode = False
+MODE = 2  # 1 = vẽ biểu đồ, 2 = xuất dữ liệu huấn luyện
+CREATE_CVDS = False
+DEVICE_LABEL = "tulanh"
+OVERWRITE_MODE = False # Nên là false
 
 # --- Đọc dữ liệu ---
 df = pd.read_csv(csv_path)
@@ -32,12 +32,12 @@ total_samples = len(df)
 step_size = test_cycles * samples_per_cycle
 
 # --- Chuẩn bị CSV nếu mode = 2 ---
-if mode == 2:
+if MODE == 2:
     output_folder = "training_images"
     os.makedirs(output_folder, exist_ok=True)
     output_csv_path = "MLP_data.csv"
 
-    if overwrite_mode or not os.path.exists(output_csv_path):
+    if OVERWRITE_MODE or not os.path.exists(output_csv_path):
         df_output = pd.DataFrame(columns=["segment_id", "label", "P_mean", "image_path"])
         starting_id = 1
     else:
@@ -73,19 +73,19 @@ def plot_results(i, P_mean, U_curve, I_curve, img, start, end):
 def save_result(i, P_mean, img, starting_id):
     global df_output
     global_id = starting_id + i
-    image_filename = f"{device_label}_segment_{global_id:04d}.png"
+    image_filename = f"{DEVICE_LABEL}_segment_{global_id:04d}.png"
     image_path = os.path.join("training_images", image_filename)
     Image.fromarray(img).save(image_path)
 
     df_output.loc[len(df_output)] = {
         "segment_id": global_id,
-        "label": device_label,
+        "label": DEVICE_LABEL,
         "P_mean": round(P_mean, 4),
         "image_path": image_path
     }
 
 # --- Chạy ---
-if not createCVDs:
+if not CREATE_CVDS:
     # Chạy trên dữ liệu gốc
     for i, start in enumerate(range(0, total_samples - step_size + 1, step_size)):
         end = start + step_size
@@ -100,7 +100,7 @@ if not createCVDs:
 
         img = flip_ui_image(plot_to_bw_image_with_gaussian_dots(U_closed, I_closed, 32, 32, 2, 0.3))
 
-        if mode == 1:
+        if MODE == 1:
             plot_results(i, P_mean, U_closed, I_closed, img, start, end)
         else:
             save_result(i, P_mean, img, starting_id)
@@ -126,12 +126,12 @@ else:
         img = flip_ui_image(plot_to_bw_image_with_gaussian_dots(U_AVG, I_AVG, 32, 32, 2, 0.3))
         P_mean = calc_prms(U_AVG, I_AVG)
 
-        if mode == 1:
+        if MODE == 1:
             plot_results(i, P_mean, U_AVG, I_AVG, img, start, end)
         else:
             save_result(i, P_mean, img, starting_id)
 
 # --- Xuất CSV nếu cần ---
-if mode == 2:
+if MODE == 2:
     df_output.to_csv(output_csv_path, index=False)
     print(f"✅ Đã lưu dữ liệu vào: {output_csv_path}")

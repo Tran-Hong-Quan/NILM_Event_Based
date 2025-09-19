@@ -20,8 +20,8 @@ overwrite_mode = False   # True = ghi đè file CSV, False = ghi thêm nếu đ�
 
 # --- Đọc file CVDs ---
 data = np.load("CVDs/all_cycles.npz", allow_pickle=True)
-U_CVDS = data["all_U2"]
-I_CVDS = data["all_I_diff"]
+U_CVDS = data["U_CVDS"]
+I_CVDS = data["I_CVDS"]
 
 # --- Chuẩn bị lưu dữ liệu nếu ở mode 2 ---
 if mode == 2:

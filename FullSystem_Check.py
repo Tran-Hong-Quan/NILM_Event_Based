@@ -6,8 +6,18 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
+def get_device_name(csv_path: str) -> str:
+    # Lấy tên file
+    filename = os.path.splitext(os.path.basename(csv_path))[0]
+    tokens = filename.split("_")
+    
+    # Tìm "event" và lấy phần sau cùng (chính là tên thiết bị)
+    if "event" in tokens:
+        return tokens[-1]  # ví dụ: maysay, quat, tulanh
+    return None
+
 # ==== Thư mục CSV ====
-folder_path = os.path.join("ElectricDatas", "MyData", "New", "data csv")
+folder_path = os.path.join("ElectricDatas", "MyNewData")
 
 # ==== Danh sách lưu kết quả ====
 true_labels_list = []
@@ -16,15 +26,10 @@ pred_labels_list = []
 # ==== Vòng lặp test từng file CSV ====
 for csv_file in glob(os.path.join(folder_path, "*.csv")):
     file_name = os.path.basename(csv_file)
-    
-    # Lấy nhãn thật từ tên file
-    match = re.search(r"event_(.+)\.csv", file_name)
-    if match:
-        true_label = match.group(1)
-    else:
-        print(f"⚠️ File {file_name} không chứa 'event_', bỏ qua.")
+    true_label = get_device_name(file_name)
+    #print(true_label)
+    if(true_label == None) :
         continue
-
     print(f"\n📂 Đang xử lý file: {file_name}")
     
     # Chạy FullSystem.py
@@ -36,6 +41,8 @@ for csv_file in glob(os.path.join(folder_path, "*.csv")):
 
     # Lấy LABEL dự đoán
     predicted_label = None
+    print("STDOUT:", result.stdout)
+    print("STDERR:", result.stderr)
     for line in result.stdout.splitlines():
         if line.startswith("RESULT_LABEL="):
             predicted_label = line.replace("RESULT_LABEL=", "").strip()

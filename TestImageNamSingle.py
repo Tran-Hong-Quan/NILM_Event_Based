@@ -5,7 +5,7 @@ from Utilis.NILM_Utilis import CycleInterpolator, close_curve, plot_to_bw_image_
 import os
 
 # --- Cấu hình ---
-csv_path = r"ElectricDatas\MyData\data csv 2\NO\mayep_event_no.csv"
+csv_path = r"ElectricDatas\MyNewData\data_26_sacmt_maysay_mayep_event_off_mayep.csv"
 parts = csv_path.replace("\\", "/").split("/")
 csv_path = os.path.join(*parts)
 
