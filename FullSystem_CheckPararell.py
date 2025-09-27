@@ -30,13 +30,16 @@ def run_one_file(csv_file: str):
     )
 
     predicted_label = None
-    #print(result.stdout.splitlines())
+    event_count = 0
+    print(result.stderr)
     for line in result.stdout.splitlines():
+        #print(line)
         if line.startswith("RESULT_LABEL="):
             predicted_label = line.replace("RESULT_LABEL=", "").strip()
-            break
+        if line.startswith("EVENT_COUNT="):
+            event_count = int(line.replace("EVENT_COUNT=", "").strip())
 
-    return true_label, predicted_label, file_name
+    return true_label, predicted_label, file_name, event_count
 
 
 if __name__ == "__main__":  # ⚠️ BẮT BUỘC để tránh lỗi RuntimeError khi chạy song song trên Windows
@@ -44,6 +47,7 @@ if __name__ == "__main__":  # ⚠️ BẮT BUỘC để tránh lỗi RuntimeErro
 
     true_labels_list = []
     pred_labels_list = []
+    event_count = 0
 
     csv_files = glob(os.path.join(folder_path, "*.csv"))
 
@@ -51,7 +55,7 @@ if __name__ == "__main__":  # ⚠️ BẮT BUỘC để tránh lỗi RuntimeErro
         futures = [executor.submit(run_one_file, csv) for csv in csv_files]
 
         for future in as_completed(futures):
-            true_label, predicted_label, file_name = future.result()
+            true_label, predicted_label, file_name, file_event_count = future.result()
 
             if true_label is None:
                 continue
@@ -62,6 +66,7 @@ if __name__ == "__main__":  # ⚠️ BẮT BUỘC để tránh lỗi RuntimeErro
 
             true_labels_list.append(true_label)
             pred_labels_list.append(predicted_label)
+            event_count += file_event_count
 
             match_status = "✅ ĐÚNG" if predicted_label == true_label else "❌ SAI"
             print(f"\n📂 {file_name}")
@@ -74,6 +79,7 @@ if __name__ == "__main__":  # ⚠️ BẮT BUỘC để tránh lỗi RuntimeErro
         print(f"🎯 Accuracy: {acc*100:.2f}%")
         print("\n📊 Classification Report:")
         print(classification_report(true_labels_list, pred_labels_list))
+        print("Số lương event / số lượng event thực tế = " + str(event_count) + " / " +str(len(csv_files)))
 
         labels_unique = sorted(list(set(true_labels_list + pred_labels_list)))
         cm = confusion_matrix(true_labels_list, pred_labels_list, labels=labels_unique)

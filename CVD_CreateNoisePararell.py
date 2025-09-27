@@ -50,7 +50,7 @@ def process_pair(delay1, delay2, I_raw, U_raw):
 
     delta_P_mean = calc_prms(U2, I_diff)
     if delta_P_mean > 7:
-        img = plot_to_bw_image_with_gaussian_dots(U2, I_diff, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_RADIUS)
+        img = plot_to_bw_image_with_gaussian_dots(U2, I_diff, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_ALPHA)
         img = flip_ui_image(img)
         return U2, I_diff
     return None
@@ -81,4 +81,4 @@ if __name__ == "__main__":
 
     # --- Lưu ---
     os.makedirs("CVDs", exist_ok=True)
-    np.savez("CVDs/all_cycles2.npz", U_CVDS=U_CVDS, I_CVDS=I_CVDS)
+    np.savez("CVDs/all_cycles.npz", U_CVDS=U_CVDS, I_CVDS=I_CVDS)

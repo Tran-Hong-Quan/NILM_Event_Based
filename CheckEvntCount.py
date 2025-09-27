@@ -25,8 +25,8 @@ for csv_file in glob(os.path.join(folder_path, "*.csv")):
     # Lấy LABEL dự đoán
     evt_count = 0
     for line in result.stdout.splitlines():
-        if line.startswith("Event_count="):
-            evt_count = int(line.replace("Event_count=", "").strip())
+        if line.startswith("EVENT_COUNT="):
+            evt_count = int(line.replace("EVENT_COUNT=", "").strip())
             break
 
     print(f"Event {evt_count}/5")

@@ -56,7 +56,7 @@ P_mean = np.mean(Power[start_idx:end_idx])
 
 # --- Sinh ảnh Gaussian (chỉ để hiển thị, không lưu) ---
 U_Closed, I_Closed = close_curve(U, I)
-img = plot_to_bw_image_with_gaussian_dots(U_Closed, I_Closed, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_RADIUS)
+img = plot_to_bw_image_with_gaussian_dots(U_Closed, I_Closed, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_ALPHA)
 
 # --- Vẽ ---
 fig, axes = plt.subplots(1, 3, figsize=(18, 6))

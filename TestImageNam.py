@@ -121,7 +121,7 @@ plt.legend()
 plt.tight_layout()
 
 plt.figure(figsize=(6, 6))
-img = plot_to_bw_image_with_gaussian_dots(U2_closed, I_diff_closed,config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_RADIUS)
+img = plot_to_bw_image_with_gaussian_dots(U2_closed, I_diff_closed,config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_ALPHA)
 plt.title("Ảnh I2 - I1")
 plt.imshow(img, cmap='gray')
 plt.tight_layout()

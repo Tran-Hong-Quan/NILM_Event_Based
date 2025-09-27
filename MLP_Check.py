@@ -57,7 +57,7 @@ def cal_img(I_raw, U_raw, Power, start1, start2):
     I_RES = smooth_savgol(I_CUR - I_LAST_ALIGNED)
     U_RES = smooth_savgol(U_CUR)
 
-    img_np = plot_to_bw_image_with_gaussian_dots(U_RES, I_RES, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_RADIUS)
+    img_np = plot_to_bw_image_with_gaussian_dots(U_RES, I_RES, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_ALPHA)
     img_np = flip_ui_image(img_np)
     image = Image.fromarray(img_np, mode='L') 
 

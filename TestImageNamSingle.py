@@ -68,7 +68,7 @@ plt.tight_layout()
 
 # --- VẼ HÌNH 3: Ảnh từ dữ liệu ---
 plt.figure(figsize=(6, 6))
-img = plot_to_bw_image_with_gaussian_dots(U_Closed, I_Closed, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_RADIUS)
+img = plot_to_bw_image_with_gaussian_dots(U_Closed, I_Closed, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_ALPHA)
 img = flip_ui_image(img)
 plt.title(f"Ảnh I-U (P_mean = {P_mean:.2f} W)")
 plt.imshow(img, cmap='gray')

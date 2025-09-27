@@ -12,12 +12,12 @@ from MLP import MLP
 import os
 
 # --- Config ---
-csv_path = "MLP_data.csv"
+csv_path = "ML_Data/MLP_data.csv"
 image_size = 32
 batch_size = 32
-num_epochs = 25
-learning_rate = 0.001
-checkpoint_path = "MLP_checkpoint.pth"
+num_epochs = 15
+learning_rate = 1e-3
+checkpoint_path = "ML_Data/MLP_checkpoint.pth"
 
 # --- Load CSV ---
 df = pd.read_csv(csv_path)
@@ -109,6 +109,6 @@ for epoch in range(start_epoch, num_epochs):
     }, checkpoint_path)
 
 # --- Save model & label encoder ---
-torch.save(model.state_dict(), "MLP.pth")
-joblib.dump(label_encoder, "MLP_label_encoder.pkl")
+torch.save(model.state_dict(), "ML_Data/MLP.pth")
+joblib.dump(label_encoder, "ML_Data/MLP_label_encoder.pkl")
 print("✅ Mô hình & checkpoint đã được lưu.")

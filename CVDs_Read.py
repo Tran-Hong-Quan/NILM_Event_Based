@@ -13,7 +13,7 @@ interp_factor = 10
 
 
 #Đọc lại file
-data = np.load("CVDs/all_cycles2.npz", allow_pickle=True)
+data = np.load("CVDs/all_cycles.npz", allow_pickle=True)
 U_CVDS = data["U_CVDS"]
 I_CVDS = data["I_CVDS"]
 
@@ -37,7 +37,7 @@ for batch_start in range(0, len(U_CVDS), batch_size):
         P_mean = calc_prms(U_CVD, I_CVD)
 
         # tạo ảnh từ dữ liệu
-        img = plot_to_bw_image_with_gaussian_dots(U_CVD, I_CVD, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_RADIUS)
+        img = plot_to_bw_image_with_gaussian_dots(U_CVD, I_CVD, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_ALPHA)
 
         # hiển thị ảnh
         ax.imshow(img, cmap='gray')

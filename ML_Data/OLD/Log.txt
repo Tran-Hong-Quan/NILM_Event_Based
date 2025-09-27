@@ -1,0 +1,500 @@
+
+📂 data_10_sacmt_event_on_quat.csv
+📌 Label thật: quat | Dự đoán: quat --> ✅ ĐÚNG
+
+
+📂 data_10_tulanh_event_off_tulanh.csv
+📌 Label thật: tulanh | Dự đoán: tulanh --> ✅ ĐÚNG
+
+
+📂 data_10_event_on_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_12_tulanh_quat_mayep_event_off_mayep.csv
+📌 Label thật: mayep | Dự đoán: mayep --> ✅ ĐÚNG
+
+
+📂 data_13_mayep_maysay_event_on_quat.csv
+📌 Label thật: quat | Dự đoán: quat --> ✅ ĐÚNG
+
+
+📂 data_11_sacmt_quat_mayep_event_on_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_10_tulanh_maysay_event_off_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_11_sacmt_quat_event_on_mayep.csv
+📌 Label thật: mayep | Dự đoán: mayep --> ✅ ĐÚNG
+
+
+📂 data_12_mayep_event_on_tulanh.csv
+📌 Label thật: tulanh | Dự đoán: tulanh --> ✅ ĐÚNG
+
+
+📂 data_11_sacmt_mayep_maysay_quat_event_off_quat.csv
+📌 Label thật: quat | Dự đoán: quat --> ✅ ĐÚNG
+
+
+📂 data_10_tulanh_maysay_quat_event_off_quat.csv
+📌 Label thật: quat | Dự đoán: quat --> ✅ ĐÚNG
+
+
+📂 data_12_tulanh_quat_event_on_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_12_mayep_tulanh_event_on_quat.csv
+📌 Label thật: quat | Dự đoán: quat --> ✅ ĐÚNG
+
+
+📂 data_11_sacmt_mayep_maysay_event_off_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_13_mayep_maysay_tulanh_event_off_tulanh.csv
+📌 Label thật: tulanh | Dự đoán: tulanh --> ✅ ĐÚNG
+
+
+📂 data_12_tulanh_quat_sacmt_event_off_quat.csv
+📌 Label thật: quat | Dự đoán: quat --> ✅ ĐÚNG
+
+
+📂 data_13_tulanh_sacmt_event_on_mayep.csv
+📌 Label thật: mayep | Dự đoán: mayep --> ✅ ĐÚNG
+
+
+📂 data_13_tulanh_mayep_maysay_sacmt_event_off_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_17_mayep_tulanh_maysay_quat_event_off_quat.csv
+📌 Label thật: quat | Dự đoán: quat --> ✅ ĐÚNG
+
+
+📂 data_15_tulanh_quat_mayep_event_off_mayep.csv
+📌 Label thật: mayep | Dự đoán: mayep --> ✅ ĐÚNG
+
+
+📂 data_16_mayep_quat_maysay_event_off_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_15_tulanh_maysay_sacmt_quat_event_off_quat.csv
+📌 Label thật: quat | Dự đoán: mayep --> ❌ SAI
+
+
+📂 data_15_mayep_tulanh_event_on_quat.csv
+📌 Label thật: quat | Dự đoán: quat --> ✅ ĐÚNG
+
+
+📂 data_17_mayep_tulanh_maysay_event_on_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_16_maysay_event_on_quat.csv
+📌 Label thật: quat | Dự đoán: quat --> ✅ ĐÚNG
+
+
+📂 data_16_tulanh_maysay_event_off_tulanh.csv
+📌 Label thật: tulanh | Dự đoán: tulanh --> ✅ ĐÚNG
+
+
+📂 data_16_maysay_quat_event_on_mayep.csv
+📌 Label thật: mayep | Dự đoán: mayep --> ✅ ĐÚNG
+
+
+📂 data_17_mayep_tulanh_sacmt_maysay_event_off_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_13_tulanh_sacmt_mayep_event_on_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_15_tulanh_quat_maysay_event_on_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_15_tulanh_quat_event_on_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_16_tulanh_maysay_sacmt_event_off_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_17_quat_mayep_tulanh_event_on_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_17_quat_mayep_event_on_tulanh.csv
+📌 Label thật: tulanh | Dự đoán: tulanh --> ✅ ĐÚNG
+
+
+📂 data_1_event_on_quat.csv
+📌 Label thật: quat | Dự đoán: quat --> ✅ ĐÚNG
+
+
+📂 data_21_mayep_tulanh_event_on_quat.csv
+📌 Label thật: quat | Dự đoán: quat --> ✅ ĐÚNG
+
+
+📂 data_20_mayep_maysay_sacmt_event_on_quat.csv
+📌 Label thật: quat | Dự đoán: mayep --> ❌ SAI
+
+
+📂 data_21_mayep_maysay_sacmt_tulanh_quat_event_off_quat.csv
+📌 Label thật: quat | Dự đoán: quat --> ✅ ĐÚNG
+
+
+📂 data_20_mayep_quat_sacmt_event_off_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_1_quat_tulanh_event_on_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_1_quat_event_on_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_21_mayep_maysay_tulanh_sacmt_event_off_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_1_quat_tulanh_maysay_event_off_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_20_mayep_maysay_quat_event_off_quat.csv
+📌 Label thật: quat | Dự đoán: quat --> ✅ ĐÚNG
+
+
+📂 data_20_mayep_maysay_event_on_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_1_maysay_quat_event_on_tulanh.csv
+📌 Label thật: tulanh | Dự đoán: tulanh --> ✅ ĐÚNG
+
+
+📂 data_20_mayep_quat_event_on_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_22_quat_maysay_mayep_event_off_mayep.csv
+📌 Label thật: mayep | Dự đoán: null --> ❌ SAI
+
+
+📂 data_21_mayep_tulanh_maysay_event_off_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_22_quat_maysay_mayep_sacmt_event_off_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: mayep --> ❌ SAI
+
+
+📂 data_21_mayep_maysay_sacmt_quat_event_on_tulanh.csv
+📌 Label thật: tulanh | Dự đoán: tulanh --> ✅ ĐÚNG
+
+
+📂 data_23_mayep_event_off_mayep.csv
+📌 Label thật: mayep | Dự đoán: null --> ❌ SAI
+
+
+📂 data_22_sacmt_event_on_quat.csv
+📌 Label thật: quat | Dự đoán: quat --> ✅ ĐÚNG
+
+
+📂 data_22_sacmt_quat_event_on_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_22_sacmt_quat_maysay_event_on_mayep.csv
+📌 Label thật: mayep | Dự đoán: mayep --> ✅ ĐÚNG
+
+
+📂 data_23_quat_event_on_mayep.csv
+📌 Label thật: mayep | Dự đoán: mayep --> ✅ ĐÚNG
+
+
+📂 data_24_mayep_maysay_event_on_quat.csv
+📌 Label thật: quat | Dự đoán: quat --> ✅ ĐÚNG
+
+
+📂 data_24_mayep_sacmt_quat_event_off_quat.csv
+📌 Label thật: quat | Dự đoán: mayep --> ❌ SAI
+
+
+📂 data_23_quat_mayep_event_on_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: mayep --> ❌ SAI
+
+
+📂 data_24_mayep_maysay_quat_event_on_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_23_quat_mayep_sacmt_event_off_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_25_mayep_maysay_quat_event_off_mayep.csv
+📌 Label thật: mayep | Dự đoán: mayep --> ✅ ĐÚNG
+
+
+📂 data_23_mayep_quat_event_off_quat.csv
+📌 Label thật: quat | Dự đoán: quat --> ✅ ĐÚNG
+
+
+📂 data_24_mayep_event_on_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_25_mayep_maysay_quat_tulanh_event_off_tulanh.csv
+📌 Label thật: tulanh | Dự đoán: tulanh --> ✅ ĐÚNG
+
+
+📂 data_26_sacmt_maysay_mayep_event_off_mayep.csv
+📌 Label thật: mayep | Dự đoán: null --> ❌ SAI
+
+
+📂 data_25_mayep_maysay_quat_tulanh_sacmt_event_off_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_24_mayep_quat_sacmt_maysay_event_off_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_25_maysay_quat_event_on_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_27_maysay_sacmt_quat_event_off_quat.csv
+📌 Label thật: quat | Dự đoán: mayep --> ❌ SAI
+
+
+📂 data_26_sacmt_event_on_tulanh.csv
+📌 Label thật: tulanh | Dự đoán: tulanh --> ✅ ĐÚNG
+
+
+📂 data_26_sacmt_tulanh_event_on_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_28_event_off_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_27_quat_maysay_event_on_tulanh.csv
+📌 Label thật: tulanh | Dự đoán: tulanh --> ✅ ĐÚNG
+
+
+📂 data_27_quat_event_on_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_29_quat_maysay_event_on_mayep.csv
+📌 Label thật: mayep | Dự đoán: mayep --> ✅ ĐÚNG
+
+
+📂 data_28_event_on_mayep.csv
+📌 Label thật: mayep | Dự đoán: mayep --> ✅ ĐÚNG
+
+
+📂 data_26_sacmt_maysay_mayep_tulanh_event_off_tulanh.csv
+📌 Label thật: tulanh | Dự đoán: tulanh --> ✅ ĐÚNG
+
+
+📂 data_27_quat_maysay_sacmt_tulanh_event_off_tulanh.csv
+📌 Label thật: tulanh | Dự đoán: tulanh --> ✅ ĐÚNG
+
+
+📂 data_28_event_on_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_29_quat_event_on_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_2_mayep_event_on_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_29_quat_maysay_mayep_event_on_tulanh.csv
+📌 Label thật: tulanh | Dự đoán: tulanh --> ✅ ĐÚNG
+
+
+📂 data_2_mayep_tulanh_event_off_tulanh.csv
+📌 Label thật: tulanh | Dự đoán: tulanh --> ✅ ĐÚNG
+
+
+📂 data_27_quat_maysay_tulanh_event_on_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_2_tulanh_event_on_mayep.csv
+📌 Label thật: mayep | Dự đoán: mayep --> ✅ ĐÚNG
+
+
+📂 data_29_quat_mayep_tulanh_maysay_event_off_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_2_quat_tulanh_event_off_quat.csv
+📌 Label thật: quat | Dự đoán: quat --> ✅ ĐÚNG
+
+
+📂 data_2_quat_tulanh_sacmt_event_off_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_28_event_on_tulanh.csv
+📌 Label thật: tulanh | Dự đoán: tulanh --> ✅ ĐÚNG
+
+
+📂 data_3_mayep_maysay_event_on_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_3_mayep_maysay_sacmt_event_on_tulanh.csv
+📌 Label thật: tulanh | Dự đoán: tulanh --> ✅ ĐÚNG
+
+
+📂 data_3_mayep_maysay_sacmt_tulanh_event_off_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_4_maysay_mayep_tulanh_event_off_tulanh.csv
+📌 Label thật: tulanh | Dự đoán: tulanh --> ✅ ĐÚNG
+
+
+📂 data_3_mayep_sacmt_tulanh_event_on_quat.csv
+📌 Label thật: quat | Dự đoán: quat --> ✅ ĐÚNG
+
+
+📂 data_3_mayep_sacmt_tulanh_quat_event_off_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_4_tulanh_maysay_event_on_mayep.csv
+📌 Label thật: mayep | Dự đoán: mayep --> ✅ ĐÚNG
+
+
+📂 data_4_tulanh_quat_mayep_event_off_mayep.csv
+📌 Label thật: mayep | Dự đoán: mayep --> ✅ ĐÚNG
+
+
+📂 data_4_tulanh_quat_maysay_event_off_quat.csv
+📌 Label thật: quat | Dự đoán: quat --> ✅ ĐÚNG
+
+
+📂 data_7_maysay_mayep_event_off_mayep.csv
+📌 Label thật: mayep | Dự đoán: mayep --> ✅ ĐÚNG
+
+
+📂 data_4_tulanh_quat_event_on_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_7_maysay_event_on_quat.csv
+📌 Label thật: quat | Dự đoán: quat --> ✅ ĐÚNG
+
+
+📂 data_6_sacmt_mayep_quat_event_off_quat.csv
+📌 Label thật: quat | Dự đoán: mayep --> ❌ SAI
+
+
+📂 data_6_quat_sacmt_event_on_mayep.csv
+📌 Label thật: mayep | Dự đoán: mayep --> ✅ ĐÚNG
+
+
+📂 data_7_maysay_quat_tulanh_event_on_mayep.csv
+📌 Label thật: mayep | Dự đoán: mayep --> ✅ ĐÚNG
+
+
+📂 data_6_mayep_event_on_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_6_quat_sacmt_tulanh_event_off_tulanh.csv
+📌 Label thật: tulanh | Dự đoán: tulanh --> ✅ ĐÚNG
+
+
+📂 data_6_sacmt_mayep_event_off_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_8_maysay_tulanh_mayep_sacmt_quat_event_off_quat.csv
+📌 Label thật: quat | Dự đoán: quat --> ✅ ĐÚNG
+
+
+📂 data_7_maysay_quat_tulanh_mayep_event_on_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_7_maysay_quat_event_on_tulanh.csv
+📌 Label thật: tulanh | Dự đoán: tulanh --> ✅ ĐÚNG
+
+
+📂 data_8_tulanh_mayep_event_on_quat.csv
+📌 Label thật: quat | Dự đoán: quat --> ✅ ĐÚNG
+
+
+📂 data_8_tulanh_mayep_sacmt_event_off_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_9_quat_mayep_event_off_mayep.csv
+📌 Label thật: mayep | Dự đoán: mayep --> ✅ ĐÚNG
+
+
+📂 data_8_tulanh_mayep_sacmt_maysay_event_off_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+
+📂 data_9_quat_event_on_tulanh.csv
+📌 Label thật: tulanh | Dự đoán: tulanh --> ✅ ĐÚNG
+
+
+📂 data_9_quat_tulanh_maysay_sacmt_event_off_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_9_quat_tulanh_maysay_event_on_sacmt.csv
+📌 Label thật: sacmt | Dự đoán: sacmt --> ✅ ĐÚNG
+
+
+📂 data_9_quat_tulanh_event_on_maysay.csv
+📌 Label thật: maysay | Dự đoán: maysay --> ✅ ĐÚNG
+
+===== ĐÁNH GIÁ MÔ HÌNH =====
+🎯 Accuracy: 91.60%
+
+📊 Classification Report:
+C:\Users\Quan\AppData\Local\Programs\Python\Python310\lib\site-packages\sklearn\metrics\_classification.py:1706: UndefinedMetricWarning: Recall is ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+C:\Users\Quan\AppData\Local\Programs\Python\Python310\lib\site-packages\sklearn\metrics\_classification.py:1706: UndefinedMetricWarning: Recall is ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+C:\Users\Quan\AppData\Local\Programs\Python\Python310\lib\site-packages\sklearn\metrics\_classification.py:1706: UndefinedMetricWarning: Recall is ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", result.shape[0])
+              precision    recall  f1-score   support
+
+       mayep       0.71      0.85      0.77        20
+      maysay       1.00      1.00      1.00        26
+        null       0.00      0.00      0.00         0
+        quat       1.00      0.81      0.90        27
+       sacmt       1.00      0.92      0.96        26
+      tulanh       1.00      1.00      1.00        20
+
+    accuracy                           0.92       119
+   macro avg       0.78      0.76      0.77       119
+weighted avg       0.95      0.92      0.93       119
+
+Số lương event / số lượng event thực tế = 138 / 119

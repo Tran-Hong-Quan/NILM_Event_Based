@@ -68,7 +68,7 @@ for delay1 in range(0, total_cycles - test_cycles, test_cycles):
         delta_P_mean = calc_prms(U2,I_diff)
         print(delta_P_mean)
         if delta_P_mean > 7:
-            img = plot_to_bw_image_with_gaussian_dots(U2, I_diff, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_RADIUS)
+            img = plot_to_bw_image_with_gaussian_dots(U2, I_diff, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_ALPHA)
             img = flip_ui_image(img)
             #--- Vẽ / Lưu ---
             # plt_ui_full_onefig(

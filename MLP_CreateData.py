@@ -10,7 +10,7 @@ from PIL import Image
 import config
 
 # --- Cấu hình ---
-csv_path = r"ElectricDatas\MyNewData\NO\quat_event_no.csv"
+csv_path = r"ElectricDatas\MyNewData\NO\mayep_event_no.csv"
 csv_path = os.path.normpath(csv_path)
 
 sampling_rate = 1000
@@ -19,9 +19,9 @@ samples_per_cycle = sampling_rate // frequency
 test_cycles = 100
 interp_factor = 10
 
-MODE = 1  # 1 = vẽ biểu đồ, 2 = xuất dữ liệu huấn luyện
+MODE = 2  # 1 = vẽ biểu đồ, 2 = xuất dữ liệu huấn luyện
 CREATE_CVDS = True
-DEVICE_LABEL = "tulanh"
+DEVICE_LABEL = "mayep"
 OVERWRITE_MODE = False # Nên là false
 
 # --- Đọc dữ liệu ---
@@ -34,9 +34,9 @@ step_size = test_cycles * samples_per_cycle
 
 # --- Chuẩn bị CSV nếu mode = 2 ---
 if MODE == 2:
-    output_folder = "training_images"
+    output_folder = "ML_Data/training_images"
     os.makedirs(output_folder, exist_ok=True)
-    output_csv_path = "MLP_data.csv"
+    output_csv_path = "ML_Data/MLP_data.csv"
 
     if OVERWRITE_MODE or not os.path.exists(output_csv_path):
         df_output = pd.DataFrame(columns=["segment_id", "label", "P_mean", "image_path"])
@@ -75,7 +75,7 @@ def save_result(i, P_mean, img, starting_id):
     global df_output
     global_id = starting_id + i
     image_filename = f"{DEVICE_LABEL}_segment_{global_id:04d}.png"
-    image_path = os.path.join("training_images", image_filename)
+    image_path = os.path.join("ML_Data/training_images", image_filename)
     Image.fromarray(img).save(image_path)
 
     df_output.loc[len(df_output)] = {
@@ -99,7 +99,7 @@ if not CREATE_CVDS:
         U_avg, I_avg = interp.get_average()
         U_closed, I_closed = close_curve(U_avg, I_avg)
 
-        img = flip_ui_image(plot_to_bw_image_with_gaussian_dots(U_closed, I_closed,config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_RADIUS))
+        img = flip_ui_image(plot_to_bw_image_with_gaussian_dots(U_closed, I_closed,config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_ALPHA))
 
         if MODE == 1:
             plot_results(i, P_mean, U_closed, I_closed, img, start, end)
@@ -124,7 +124,7 @@ else:
         U_AVG, I_AVG = U_avg.copy(), I_avg.copy()
         I_AVG += I_CVD
 
-        img = flip_ui_image(plot_to_bw_image_with_gaussian_dots(U_AVG, I_AVG, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_RADIUS))
+        img = flip_ui_image(plot_to_bw_image_with_gaussian_dots(U_AVG, I_AVG, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_ALPHA))
         P_mean = calc_prms(U_AVG, I_AVG)
 
         if MODE == 1:
@@ -136,3 +136,4 @@ else:
 if MODE == 2:
     df_output.to_csv(output_csv_path, index=False)
     print(f"✅ Đã lưu dữ liệu vào: {output_csv_path}")
+    print("LABEL = " + DEVICE_LABEL)

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
-from Utilis.NILM_Utilis import (CycleInterpolator, CircularBuffer, align_phase, calc_prms, 
+from Utilis.NILM_Utilis import (CycleInterpolator, align_phase, calc_prms, 
                                 smooth_savgol, flip_ui_image, plot_to_bw_image_with_gaussian_dots)
 from DrawUIImage import plt_event_window,plt_ui_full_onefig
 from Utilis.EventDectection.QUAN import QuanDetector
@@ -17,7 +17,7 @@ isChecking = False
 if len(sys.argv) > 1:
     csv_path = sys.argv[1]
 else:
-    csv_path = r"ElectricDatas\MyNewData\data_28_event_on_tulanh.csv"
+    csv_path = r"ElectricDatas\MyNewData\data_22_quat_maysay_mayep_sacmt_event_off_sacmt.csv"
     isChecking = True
 parts = csv_path.replace("\\", "/").split("/")
 csv_path = os.path.join(*parts)
@@ -28,19 +28,22 @@ U_raw = df["Un"].values
 data_len = len(I_raw)
 
 #Lấy dữ liệu event
-filename = os.path.basename(csv_path)
-filename_no_ext = os.path.splitext(filename)[0]  # bỏ .csv
-parts = filename_no_ext.split("_")
-event_index = parts.index("event")
-state = parts[event_index + 1]      # "on" hoặc "off"
-device = parts[event_index + 2]     # thiết bị chính
-#print("Trạng thái:", state)
-#print("Thiết bị:", device)
+try:
+    filename = os.path.basename(csv_path)
+    filename_no_ext = os.path.splitext(filename)[0]  # bỏ .csv
+    parts = filename_no_ext.split("_")
+    event_index = parts.index("event")
+    state = parts[event_index + 1]
+    device = parts[event_index + 2]
+except (ValueError, IndexError):
+    state = device = "null"
+
+print("State:", state)
+print("Device:", device)
 
 # -----------------------------Tham số hệ thống------------------------
 SAMPLING_RATE = 1000        # Tần lấy mẫu bộ đo
 FREQUENCY = 50              # Tần số mạng điện 
-BUFFER_DURATION = 60        # Độ dài tính bằng thời gian cho bộ đệm lưu I và U
 # -----------Tham số trích xuất ảnh------------------------------------
 IMAGE_CYCLE_DURATION = 2    # Thời gian lấy mẫu để tạo ảnh
 INTERP_FACTOR = 10           # Nhân tử nội suy
@@ -62,11 +65,24 @@ KALMAN_R = 100              # R CỦA BỘ LỌC KALMAN
 SAMPLES_PER_CYCLE = SAMPLING_RATE // FREQUENCY      # Số điểm ở mỗi vòng
 IMAGE_CYCLES = int(IMAGE_CYCLE_DURATION * FREQUENCY)     # Số vòng để tạo ảnh
 SAMPLE_PER_IMAGE = SAMPLES_PER_CYCLE * IMAGE_CYCLES
-BUFFER_LEN = BUFFER_DURATION * SAMPLING_RATE        # Độ dài buffer lưu dữ liệu U, I
-I_BUFFER = CircularBuffer(BUFFER_LEN)               # Mảng lưu trữ I của hệ thống đo
-U_BUFFER = CircularBuffer(BUFFER_LEN)               # Mảng lưu trư U của hệ thống đo
 P_EVENT_BUFFER = []                                 # Mảng lưu giá trị tính trung bình cho bộ phát hiện sự kiên
 P_EVENT_BUFFER_LEN = SAMPLING_RATE // EVENT_SAMPLING_RATE   # Độ dài buffer cho tính trung bình công suất cho phát hiện sự kiến
+#--------------- Tham số loại event giả-------------------
+EVENT_TYPE_LIMITS = {
+    0: 6,   # WAMMA
+    1: 12    # LowDec
+}
+EVENT_WAMMA_2_LOWDEC_LIMITS = 10 # Nếu event trước là wamma thì limit thời gian lowdec
+EVENT_LOWDEC_2_WAMMA_LIMITS = 5 # Nếu event trước là lowdec thì limit thời gian wamma
+last_event_time = -1
+last_event_type = -1
+last_label = "null"
+last_event_P_Mean = 0
+evt_count = 0
+
+#---------------Tham số debug/đánh giá-----------------------
+LABEL = "null"
+IsRightLabel = False
 
 # Khởi tạo bộ phát hiện sự kiện
 quan = QuanDetector(event_sampling_rate = EVENT_SAMPLING_RATE,
@@ -81,18 +97,16 @@ quan = QuanDetector(event_sampling_rate = EVENT_SAMPLING_RATE,
                     event_time_limit_sam=EVENT_TIME_LIMIT_SAM,
                     init_power= 0, 
                     kalman_Q = KALMAN_Q,kalman_R = KALMAN_R)
-state = 0   # Trạng thái hệ thống, -1 là đang khởi tạo, 0 là đang tìm event, 1 là đang thu thập dữ liệu cho nhận diện
-currentCycleCount = 0   # Số vòng đã thu thập được cho ảnh
 
 #Khởi tạo mô hình MLP
 clf = MLP_Predict(
-    model_path="MLP.pth",
-    label_encoder_path="MLP_label_encoder.pkl"
+    model_path="ML_DATA/MLP.pth",
+    label_encoder_path="ML_DATA/MLP_label_encoder.pkl"
 )
 
 #Khởi tạo hậu xử lý dữ liệu
 matcher = TemplateMatcher("")
-CONFIDENCE_THRESHOLD = .5
+CONFIDENCE_THRESHOLD = 0
 
 # Hàm tính ảnh I2 - I1 và gọi hàm vẽ
 def cal_img(start1, start2):
@@ -105,7 +119,7 @@ def cal_img(start1, start2):
     #print(calc_prms(i1,u1))
     delta_p_mean = abs(calc_prms(i2,u2) - calc_prms(i1,u1))
     #print("Delta P RMS = "  +str(delta_p_mean))
-    if delta_p_mean < 15:
+    if delta_p_mean < 20:
         return
 
     if len(i1) < SAMPLE_PER_IMAGE or len(i2) < SAMPLE_PER_IMAGE:
@@ -127,13 +141,13 @@ def cal_img(start1, start2):
     U_RES = smooth_savgol(U_RES)
     I_RES = smooth_savgol(I_RES)
     
-    img_np = plot_to_bw_image_with_gaussian_dots(U_RES, I_RES, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_RADIUS)
+    img_np = plot_to_bw_image_with_gaussian_dots(U_RES, I_RES, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_ALPHA)
     img_np = flip_ui_image(img_np)
     label,confidence  = clf.predict(image_input=img_np, p_mean=delta_p_mean)
     print("MLP label: " + str(label))
     if label == None:
         label = "null"
-    label = matcher.match(label,delta_p_mean)
+    # label = matcher.match(label,delta_p_mean)
     if isChecking:
         image = Image.fromarray(img_np, mode='L') 
         plt_ui_full_onefig(SAMPLING_RATE, Power,
@@ -143,23 +157,8 @@ def cal_img(start1, start2):
     if confidence < CONFIDENCE_THRESHOLD:
         label = "null"
     return label
-    
-LABEL = "null"
 # -------------------- Vòng lặp chính --------------------
-
-EVENT_TYPE_LIMITS = {
-    0: 6,   # WAMMA
-    1: 12    # LowDec
-}
-EVENT_WAMMA_2_LOWDEC_LIMITS = 10 # Nếu event trước là wamma thì limit thời gian lowdec
-EVENT_LOWDEC_2_WAMMA_LIMITS = 5 # Nếu event trước là lowdec thì limit thời gian wamma
-last_event_time = -1
-last_event_type = -1
-last_label = "null"
-last_event_P_Mean = 0
-
-evt_count = 0
-
+#plt_event_window(Power,1000,0,10,0)
 for idx in range(data_len):
     i = I_raw[idx]
     u = U_raw[idx]
@@ -239,8 +238,9 @@ for idx in range(data_len):
                     if label != "null":  
                         LABEL = label
                         if LABEL == device:
+                            IsRightLabel = True
                             print(f"RESULT_LABEL={LABEL}")
                         
-#print("Event_count="+str(evt_count))
-if device != LABEL:
+print("EVENT_COUNT="+str(evt_count))
+if device != LABEL and IsRightLabel == False:
     print(f"RESULT_LABEL={LABEL}")
