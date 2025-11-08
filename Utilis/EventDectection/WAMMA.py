@@ -21,8 +21,6 @@ class WAMMA:
     def adjustWindows(self):
         self.Nw_w += 1
         self.N_Lm -= 1
-        if self.N_Lm < 2:
-            self.N_Lm = 2
 
     def update(self, value):
         self.window.append(value)
@@ -58,7 +56,7 @@ class WAMMA:
         
         Si = 0
         for i in range(1,int(self.N_Lm / 2)):
-            di =  WAMMA.sgn(self.window[i] - self.window[i-1])
+            di = WAMMA.sgn(self.window[i] - self.window[i-1])
             Si += di
             PrSi = abs(Si) / i
             if PrSi > 0.6 and self.N_Lm > 2:
@@ -71,7 +69,7 @@ class WAMMA:
             di = WAMMA.sgn(self.window[i] - self.window[i-1])
             Si += di
             PrSi = abs(Si) / i
-            if PrSi > 0.6:
+            if PrSi > 0.6 and self.N_Lm > 2:
                 #print("Right Adj 2")
                 self.adjustWindows()
                 return 0

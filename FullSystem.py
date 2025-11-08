@@ -17,7 +17,7 @@ isChecking = False
 if len(sys.argv) > 1:
     csv_path = sys.argv[1]
 else:
-    csv_path = r"ElectricDatas\MyNewData\data_22_quat_maysay_mayep_sacmt_event_off_sacmt.csv"
+    csv_path = r"ElectricDatas\MyNewData\data_9_quat_tulanh_event_on_maysay.csv"
     isChecking = True
 parts = csv_path.replace("\\", "/").split("/")
 csv_path = os.path.join(*parts)
@@ -67,13 +67,16 @@ IMAGE_CYCLES = int(IMAGE_CYCLE_DURATION * FREQUENCY)     # Số vòng để tạ
 SAMPLE_PER_IMAGE = SAMPLES_PER_CYCLE * IMAGE_CYCLES
 P_EVENT_BUFFER = []                                 # Mảng lưu giá trị tính trung bình cho bộ phát hiện sự kiên
 P_EVENT_BUFFER_LEN = SAMPLING_RATE // EVENT_SAMPLING_RATE   # Độ dài buffer cho tính trung bình công suất cho phát hiện sự kiến
+
+
 #--------------- Tham số loại event giả-------------------
+EVENT_TIME_LIMIT_COMMMON = 6
 EVENT_TYPE_LIMITS = {
     0: 6,   # WAMMA
-    1: 12    # LowDec
+    1: 14    # LowDec
 }
-EVENT_WAMMA_2_LOWDEC_LIMITS = 10 # Nếu event trước là wamma thì limit thời gian lowdec
-EVENT_LOWDEC_2_WAMMA_LIMITS = 5 # Nếu event trước là lowdec thì limit thời gian wamma
+EVENT_WAMMA_2_LOWDEC_LIMITS = 18 # Nếu event trước là wamma thì limit thời gian lowdec
+EVENT_LOWDEC_2_WAMMA_LIMITS = 12 # Nếu event trước là lowdec thì limit thời gian wamma
 last_event_time = -1
 last_event_type = -1
 last_label = "null"
@@ -118,7 +121,7 @@ def cal_img(start1, start2):
     #print(calc_prms(i2,u2))
     #print(calc_prms(i1,u1))
     delta_p_mean = abs(calc_prms(i2,u2) - calc_prms(i1,u1))
-    #print("Delta P RMS = "  +str(delta_p_mean))
+    print("Delta P RMS = "  +str(delta_p_mean))
     if delta_p_mean < 20:
         return
 
@@ -183,7 +186,6 @@ for idx in range(data_len):
                 #print("P_Mean = " + str(P_Mean))
 
                 if label == "null" or label is None:
-                    quan.fake_event()
                     continue
 
                 # --- Kiểm tra thời gian giới hạn ---
@@ -196,7 +198,6 @@ for idx in range(data_len):
                         limit_time = EVENT_TYPE_LIMITS.get(eventType, 10)
                         if delta_time < limit_time:
                             #print(f"[Fake Event] quá gần (Δt={delta_time:.2f}s), cùng loại & cùng label {label}")
-                            quan.fake_event()
                             accept_event = False
                             print("fake event")
 
@@ -208,7 +209,6 @@ for idx in range(data_len):
                             limit_time = EVENT_WAMMA_2_LOWDEC_LIMITS
                         if delta_time < limit_time and abs(last_event_P_Mean - P_Mean) / P_Mean < .2:
                             #print(f"[Fake Event] quá gần (Δt={delta_time:.2f}s), khác loại nhưng cùng label {label}")
-                            quan.fake_event()
                             accept_event = False
                             print("fake event")
 
@@ -221,11 +221,16 @@ for idx in range(data_len):
                                 limit_time = EVENT_LOWDEC_2_WAMMA_LIMITS
                             else:
                                 limit_time = EVENT_WAMMA_2_LOWDEC_LIMITS
+                        print(f"Limit time {limit_time}, delta time {delta_time}")
                         if delta_time < limit_time:
                             #print(f"[Fake Event] Δt={delta_time:.2f}s, label khác ({last_label}→{label}) nhưng P_Mean gần giống")
-                            quan.fake_event()
                             accept_event = False
                             print("fake event")
+                    # 4. Event quá gần nhau
+                    elif delta_time <= EVENT_TIME_LIMIT_COMMMON:
+                        accept_event = False
+                        print("fake event")
+                        
 
                 # Nếu event thật
                 if accept_event:

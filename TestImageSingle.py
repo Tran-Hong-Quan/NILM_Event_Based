@@ -58,7 +58,7 @@ plt.tight_layout()
 # --- VẼ HÌNH 2: Test 1 ---
 plt.figure(figsize=(6, 6))
 U_Closed, I_Closed = close_curve(U, I)
-plt.plot(U_Closed, I_Closed, label=f'Test 1\nP_mean = {P_mean:.2f} W', color='blue')
+plt.plot(U_Closed, I_Closed, label=f'P_mean = {abs(P_mean):.2f} W', color='red')
 plt.xlabel("Voltage U (V)")
 plt.ylabel("Current I (A)")
 plt.title("Trung bình I theo U (Test 1)")

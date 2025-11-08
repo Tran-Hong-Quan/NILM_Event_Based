@@ -69,7 +69,12 @@ if __name__ == "__main__":  # ⚠️ BẮT BUỘC để tránh lỗi RuntimeErro
             event_count += file_event_count
 
             match_status = "✅ ĐÚNG" if predicted_label == true_label else "❌ SAI"
+                
             print(f"\n📂 {file_name}")
+            if file_event_count > 1:
+                print(f"Có {file_event_count}")
+            elif file_event_count == 0:
+                print("Không thấy event")
             print(f"📌 Label thật: {true_label} | Dự đoán: {predicted_label} --> {match_status}")
 
     # ==== ĐÁNH GIÁ TOÀN BỘ ====

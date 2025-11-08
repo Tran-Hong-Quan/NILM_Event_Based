@@ -6,7 +6,7 @@ import os
 import config
 
 # --- Cấu hình ---
-csv_path = r"ElectricDatas\MyData\data csv\sacmt_maysay_tulanh_event_mayep.csv"
+csv_path = r"ElectricDatas\MyData\data csv 2\quat_event_sacmt.csv"
 parts = csv_path.replace("\\", "/").split("/")
 csv_path = os.path.join(*parts)
 sampling_rate = 1000
