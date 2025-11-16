@@ -45,18 +45,21 @@ def run_one_file(csv_file: str,pythonFile: str):
 if __name__ == "__main__":  # ⚠️ BẮT BUỘC để tránh lỗi RuntimeError khi chạy song song trên Windows
     folder_path = os.path.join("ElectricDatas", "MyNewData")
 
-    true_labels_list = []
-    pred_labels_list = []
-    event_count = 0
-    missedEventCount = 0
-    fakeEventCount = 0
-    evaluateOnlyML = False
-    pythonFile = "FullSystemWAMMA.py"
+    #Tham số khởi tạo (Constant)
+    EVUALATE_ONLY_ML = False           #True là chỉ đánh giá mô hình học máy, false là toàn bộ hệ thống
+    PYTHON_FILE = "FullSystemWAMMA.py"  #Tên file python toàn hệ thống
+    
+    #Tham số đánh giá
+    EVENT_COUNT = 0
+    MISSED_EVENT_COUNT = 0
+    FAKE_EVENT_COUNT = 0
+    TRUE_LABEL_LIST = []
+    PRED_LABELS_LIST = []
 
     csv_files = glob(os.path.join(folder_path, "*.csv"))
 
     with ProcessPoolExecutor() as executor:
-        futures = [executor.submit(run_one_file, csv, pythonFile) for csv in csv_files]
+        futures = [executor.submit(run_one_file, csv, PYTHON_FILE) for csv in csv_files]
 
         for future in as_completed(futures):
             true_label, predicted_labels, file_name, file_event_count = future.result()
@@ -73,53 +76,53 @@ if __name__ == "__main__":  # ⚠️ BẮT BUỘC để tránh lỗi RuntimeErro
             if len(predicted_labels) > 0:
                 for p in predicted_labels:
                     if p in true_label:
-                        true_labels_list.append(p)
-                        pred_labels_list.append(p)
+                        TRUE_LABEL_LIST.append(p)
+                        PRED_LABELS_LIST.append(p)
                         
                         predicted = p
                         predicted_labels.remove(p)
                         isMatch = True
                         break
                 if not isMatch:
-                    true_labels_list.append(true_label)
-                    pred_labels_list.append(predicted_labels[0])
+                    TRUE_LABEL_LIST.append(true_label)
+                    PRED_LABELS_LIST.append(predicted_labels[0])
                     
                     predicted = predicted_labels[0]
                     predicted_labels.remove(predicted_labels[0])
-                if not evaluateOnlyML:
+                if not EVUALATE_ONLY_ML:
                     for p in predicted_labels:
-                            true_labels_list.append("null")
-                            pred_labels_list.append(p)
-            elif not evaluateOnlyML:
-                true_labels_list.append(true_label)
-                pred_labels_list.append("null")
+                            TRUE_LABEL_LIST.append("null")
+                            PRED_LABELS_LIST.append(p)
+            elif not EVUALATE_ONLY_ML:
+                TRUE_LABEL_LIST.append(true_label)
+                PRED_LABELS_LIST.append("null")
             
             match_status = "✅ ĐÚNG" if isMatch else "❌ SAI"
             
-            event_count += file_event_count   
+            EVENT_COUNT += file_event_count   
                 
             print(f"\n📂 {file_name}")
             if file_event_count > 1:
                 print(f"Có {file_event_count}")
-                fakeEventCount += file_event_count - 1
+                FAKE_EVENT_COUNT += file_event_count - 1
             elif file_event_count == 0:
                 print("Không thấy event")
-                missedEventCount += 1
+                MISSED_EVENT_COUNT += 1
             print(f"📌 Label thật: {true_label} | Dự đoán: {predicted} --> {match_status}")
 
     # ==== ĐÁNH GIÁ TOÀN BỘ ====
-    if true_labels_list:
-        acc = accuracy_score(true_labels_list, pred_labels_list)
+    if TRUE_LABEL_LIST:
+        acc = accuracy_score(TRUE_LABEL_LIST, PRED_LABELS_LIST)
         print("\n===== ĐÁNH GIÁ MÔ HÌNH =====")
         print(f"🎯 Accuracy: {acc*100:.2f}%")
         print("\n📊 Classification Report:")
-        print(classification_report(true_labels_list, pred_labels_list))
-        print("Số lượng event / số lượng event thực tế = " + str(event_count) + " / " +str(len(csv_files)))
-        print(f"Số lượng event giả: {fakeEventCount}")
-        print(f"Số lượng event bỏ lỡ: {missedEventCount}")
+        print(classification_report(TRUE_LABEL_LIST, PRED_LABELS_LIST))
+        print("Số lượng event / số lượng event thực tế = " + str(EVENT_COUNT) + " / " +str(len(csv_files)))
+        print(f"Số lượng event giả: {FAKE_EVENT_COUNT}")
+        print(f"Số lượng event bỏ lỡ: {MISSED_EVENT_COUNT}")
 
-        labels_unique = sorted(list(set(true_labels_list + pred_labels_list)))
-        cm = confusion_matrix(true_labels_list, pred_labels_list, labels=labels_unique)
+        labels_unique = sorted(list(set(TRUE_LABEL_LIST + PRED_LABELS_LIST)))
+        cm = confusion_matrix(TRUE_LABEL_LIST, PRED_LABELS_LIST, labels=labels_unique)
 
         plt.figure(figsize=(10, 8))
         sns.heatmap(cm, annot=True, fmt="d", cmap="Blues",

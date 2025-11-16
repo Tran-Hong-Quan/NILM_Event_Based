@@ -57,6 +57,7 @@ EVENT_TIME_LIMIT_DIF = 11   # Giới hạn thời gian 2 Event Khác nhau
 EVENT_TIME_LIMIT_SAM = 5    # Giới hạn thời gian 2 Event Giống nhau
 WAMMA_P_THRE = 30           # P giới hạn phát hiện sự kiện cho cửa sổ WAMMA
 WAMMA_R_THRE = 1            # R giới hạn phát hiện sự kiện cho WAMMA, càng bé càng nhạy với nhiễu
+# Nếu để 30, Mô hình học máy sẽ có độ chính xác lên tới 99%, nhưng sự kiện bị bỏ lỡ lên tận 16, và sự kiện giả chỉ còn 4, trong khi để 30 lại là 0 và 9, độ chính xác là 96%
 LOW_DEC_THRE = 20           # P giới hạn phát hiện sự kiện cho cửa sổ phát hiện sự kiện tần số thấp
 KALMAN_Q = 0.01             # Q CỦA BỘ LỌC KALMAN
 KALMAN_R = 100              # R CỦA BỘ LỌC KALMAN
