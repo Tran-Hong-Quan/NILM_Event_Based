@@ -1,7 +1,11 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from Utilis.NILM_Utilis import CycleInterpolator, align_phase, close_curve, close_array, calc_prms, plot_to_bw_image_with_gaussian_dots, smooth_savgol, is_right_side_greater 
+from Utilis.NILM_Utilis import (
+    CycleInterpolator, align_phase, close_curve, close_array,
+    calc_prms, plot_to_bw_image_with_gaussian_dots,
+    smooth_savgol, is_right_side_greater
+)
 import os
 import config
 
@@ -9,6 +13,7 @@ import config
 csv_path = r"ElectricDatas\MyData\data csv 2\quat_event_sacmt.csv"
 parts = csv_path.replace("\\", "/").split("/")
 csv_path = os.path.join(*parts)
+
 sampling_rate = 1000
 frequency = 50
 samples_per_cycle = sampling_rate // frequency
@@ -24,106 +29,111 @@ time = np.arange(len(df)) / sampling_rate
 Power = df["Power"].values
 I_raw = df["In"].values
 U_raw = df["Un"].values
-print(len(I_raw))
 
-# --- Xử lý test 1 ---
+# --- Test 1 ---
 start1 = delay1 * samples_per_cycle
-end1 = start1 + test_cycles * samples_per_cycle
-I_seg1 = I_raw[start1:end1]
-U_seg1 = U_raw[start1:end1]
+end1   = start1 + test_cycles * samples_per_cycle
 
 interp1 = CycleInterpolator(samples_per_cycle, interp_factor)
 for i in range(test_cycles):
     s = i * samples_per_cycle
     e = (i + 1) * samples_per_cycle
-    interp1.update(I_seg1[s:e], U_seg1[s:e])
+    interp1.update(I_raw[start1+s:start1+e], U_raw[start1+s:start1+e])
 U1, I1 = interp1.get_average()
 
-# --- Xử lý test 2 ---
+# --- Test 2 ---
 start2 = delay2 * samples_per_cycle
-end2 = start2 + test_cycles * samples_per_cycle
-I_seg2 = I_raw[start2:end2]
-U_seg2 = U_raw[start2:end2]
+end2   = start2 + test_cycles * samples_per_cycle
 
 interp2 = CycleInterpolator(samples_per_cycle, interp_factor)
 for i in range(test_cycles):
     s = i * samples_per_cycle
     e = (i + 1) * samples_per_cycle
-    interp2.update(I_seg2[s:e], U_seg2[s:e])
+    interp2.update(I_raw[start2+s:start2+e], U_raw[start2+s:start2+e])
 U2, I2 = interp2.get_average()
 
+# --- Căn pha ---
 U1_aligned, best_shift = align_phase(U2, U1)
 I1_aligned = np.roll(I1, -best_shift)
 I_diff = (I2 - I1_aligned)
 
-sign = is_right_side_greater(I_diff,U2)
+sign = is_right_side_greater(I_diff, U2)
 I_diff *= sign
-print("Curve Direction = " + str(sign))
-print("Delta P_rms = " + str(calc_prms(U1,I1)-calc_prms(U2,I2)))
+print("Curve Direction =", sign)
+print("Delta P_rms =", calc_prms(U1, I1) - calc_prms(U2, I2))
 
-# --- VẼ HÌNH 1: Power theo thời gian ---
-plt.figure(figsize=(12, 5))
-plt.plot(time, Power, label="Power (W)", color='black')
+# ================================================================
+#  CỬA SỔ 1 — U_raw, I_raw, P theo thời gian (3 subplot chung trục)
+# ================================================================
+figA, ax = plt.subplots(3, 1, figsize=(14, 8), sharex=True)
 
-plt.axvline(time[start1], color='blue', linestyle='--', label="Test 1 Start")
-plt.axvline(time[end1], color='blue', linestyle='--', label="Test 1 End")
-plt.fill_between(time[start1:end1], Power[start1:end1], alpha=0.2, color='blue')
+ax[0].plot(time, Power, color='black')
+ax[0].set_ylabel("P (W)")
+ax[0].set_title("Power – Voltage – Current theo thời gian (đồng bộ trục)")
 
-plt.axvline(time[start2], color='red', linestyle='--', label="Test 2 Start")
-plt.axvline(time[end2], color='red', linestyle='--', label="Test 2 End")
-plt.fill_between(time[start2:end2], Power[start2:end2], alpha=0.2, color='red')
+ax[1].plot(time, U_raw, color='black')
+ax[1].set_ylabel("U_raw (V)")
 
-plt.text(time[start1], np.max(Power)*0.95, "Start 1", color='blue')
-plt.text(time[end1], np.max(Power)*0.95, "End 1", color='blue', ha='right')
-plt.text(time[start2], np.max(Power)*0.9, "Start 2", color='red')
-plt.text(time[end2], np.max(Power)*0.9, "End 2", color='red', ha='right')
+ax[2].plot(time, I_raw, color='black')
+ax[2].set_ylabel("I_raw (A)")
+ax[2].set_xlabel("Time (s)")
 
-plt.xlabel("Time (s)")
-plt.ylabel("Power (W)")
-plt.title("Power theo thời gian (đánh dấu 2 vùng test)")
-plt.legend()
-plt.grid(True)
+# Highlight vùng test
+for a in ax:
+    # Test 1
+    a.axvline(time[start1], color='blue', linestyle='--')
+    a.axvline(time[end1],   color='blue', linestyle='--')
+    a.fill_between(time[start1:end1], a.get_ylim()[0], a.get_ylim()[1],
+                   color='blue', alpha=0.15)
+
+    # Test 2
+    a.axvline(time[start2], color='red', linestyle='--')
+    a.axvline(time[end2],   color='red', linestyle='--')
+    a.fill_between(time[start2:end2], a.get_ylim()[0], a.get_ylim()[1],
+                   color='red', alpha=0.15)
+
 plt.tight_layout()
 
-# --- VẼ HÌNH 2: Test 1 ---
-plt.figure(figsize=(6, 6))
-U1_closed,I1_closed = close_curve(U1,I1)
-plt.plot(U1_closed, I1_closed, label='Test 1', color='blue')
-plt.xlabel("Voltage U (V)")
-plt.ylabel("Current I (A)")
-plt.title("Trung bình I theo U (Test 1)")
-plt.grid(True)
-plt.legend()
-plt.tight_layout()
+# ================================================================
+#  CỬA SỔ 2 — Test1, Test2, ΔI, Ảnh Gaussian (gộp chung 2×2)
+# ================================================================
+figB, axs = plt.subplots(2, 2, figsize=(12, 10))
 
-# --- VẼ HÌNH 3: Test 2 ---
-plt.figure(figsize=(6, 6))
-U2_closed,I2_closed = close_curve(U2,I2)
-plt.plot(U2_closed, I2_closed, label='Test 2', color='red')
-plt.xlabel("Voltage U (V)")
-plt.ylabel("Current I (A)")
-plt.title("Trung bình I theo U (Test 2)")
-plt.grid(True)
-plt.legend()
-plt.tight_layout()
+# --- Test 1 ---
+U1_closed, I1_closed = close_curve(U1, I1)
+axs[0, 0].plot(U1_closed, I1_closed, color='blue')
+axs[0, 0].set_title("Test 1 – U–I")
+axs[0, 0].set_xlabel("U (V)")
+axs[0, 0].set_ylabel("I (A)")
+axs[0, 0].grid(True)
 
-# --- VẼ HÌNH 4: I2 - I1 sau khi căn pha ---
-plt.figure(figsize=(6, 6))
+# --- Test 2 ---
+U2_closed, I2_closed = close_curve(U2, I2)
+axs[0, 1].plot(U2_closed, I2_closed, color='red')
+axs[0, 1].set_title("Test 2 – U–I")
+axs[0, 1].set_xlabel("U (V)")
+axs[0, 1].set_ylabel("I (A)")
+axs[0, 1].grid(True)
+
+# --- I_diff ---
 I_diff_closed = close_array(I_diff)
 U_smooth = smooth_savgol(U2_closed, window_length=21, polyorder=5)
 I_smooth = smooth_savgol(I_diff_closed, window_length=21, polyorder=5)
-plt.plot(U_smooth, I_smooth, label='I2 - I1 (đã căn pha)', color='purple')
-plt.xlabel("Voltage U (V)")
-plt.ylabel("Current diff (A)")
-plt.title("Hiệu I2 - I1 sau khi căn pha theo U")
-plt.grid(True)
-plt.legend()
-plt.tight_layout()
+axs[1, 0].plot(U_smooth, I_smooth, color='purple')
+axs[1, 0].set_title("ΔI = I2 – I1_aligned (smooth)")
+axs[1, 0].set_xlabel("U (V)")
+axs[1, 0].set_ylabel("ΔI (A)")
+axs[1, 0].grid(True)
 
-plt.figure(figsize=(6, 6))
-img = plot_to_bw_image_with_gaussian_dots(U2_closed, I_diff_closed,config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_ALPHA)
-plt.title("Ảnh I2 - I1")
-plt.imshow(img, cmap='gray')
-plt.tight_layout()
+# --- Ảnh Gaussian ---
+img = plot_to_bw_image_with_gaussian_dots(
+    U2_closed, I_diff_closed,
+    config.IMAGE_SIZE, config.IMAGE_SIZE,
+    config.IMG_DOT_RADIUS, config.IMG_DOT_ALPHA
+)
+axs[1, 1].imshow(img, cmap='gray')
+axs[1, 1].set_title("Ảnh Gaussian – ΔI")
+axs[1, 1].axis("off")
 
+plt.tight_layout()
 plt.show()

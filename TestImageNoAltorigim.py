@@ -4,6 +4,7 @@ import numpy as np
 from Utilis.NILM_Utilis import CycleInterpolator, close_curve, plot_to_bw_image_with_gaussian_dots, flip_ui_image
 import os
 import config
+
 # --- Cấu hình ---
 csv_path = r"ElectricDatas\MyData\data csv 2\NO\sacmt_event_no.csv"
 parts = csv_path.replace("\\", "/").split("/")
@@ -34,43 +35,52 @@ U = U_seg1
 I = I_seg1
 
 # --- Tính P trung bình ---
-P_mean = np.mean(U * I)  # W
+P_mean = np.mean(U * I)
 
-# --- VẼ HÌNH 1: Power theo thời gian ---
-plt.figure(figsize=(12, 5))
-plt.plot(time, Power, label="Power (W)", color='black')
+# ============================================================
+#  VẼ FULL TIME U, I, P CHUNG 1 CỬA SỔ — CÙNG TRỤC THỜI GIAN
+# ============================================================
 
-plt.axvline(time[start1], color='blue', linestyle='--', label="Test 1 Start")
-plt.axvline(time[end1], color='blue', linestyle='--', label="Test 1 End")
-plt.fill_between(time[start1:end1], Power[start1:end1], alpha=0.2, color='blue')
+fig, axes = plt.subplots(3, 1, figsize=(14, 8), sharex=True)
 
-plt.text(time[start1], np.max(Power)*0.95, "Start 1", color='blue')
-plt.text(time[end1], np.max(Power)*0.95, "End 1", color='blue', ha='right')
+# U
+axes[0].plot(time, U_raw, color='black')
+axes[0].set_ylabel("U (V)")
+axes[0].grid(True)
+axes[0].set_title("U, I, P theo thời gian (đồng bộ trục thời gian)")
 
-plt.xlabel("Time (s)")
-plt.ylabel("Power (W)")
-plt.title("Power theo thời gian (đánh dấu 2 vùng test)")
-plt.legend()
-plt.grid(True)
+# I
+axes[1].plot(time, I_raw, color='black')
+axes[1].set_ylabel("I (A)")
+axes[1].grid(True)
+
+# P
+axes[2].plot(time, Power, color='black')
+axes[2].set_ylabel("P (W)")
+axes[2].set_xlabel("Time (s)")
+axes[2].grid(True)
+
+# Đánh dấu vùng test giống hình cũ
+for ax in axes:
+    ax.axvline(time[start1], color='blue', linestyle='--')
+    ax.axvline(time[end1], color='blue', linestyle='--')
+    ax.fill_between(time[start1:end1],
+                    ax.get_ylim()[0],
+                    ax.get_ylim()[1],
+                    alpha=0.15, color='blue')
+
 plt.tight_layout()
 
-# --- VẼ HÌNH 2: Test 1 ---
+# ============================================================
+#  VẼ TEST 
+# ============================================================
+
 plt.figure(figsize=(6, 6))
-U_Closed, I_Closed = close_curve(U, I)
-plt.scatter(U_Closed, I_Closed, label=f'P_mean = {abs(P_mean):.2f} W', color='blue')
+plt.scatter(U, I, label=f'P_mean = {abs(P_mean):.2f} W', color='blue')
 plt.xlabel("Voltage U (V)")
 plt.ylabel("Current I (A)")
-#plt.title("Trung bình I theo U")
 plt.grid(True)
 plt.legend()
-plt.tight_layout()
-
-# --- VẼ HÌNH 3: Ảnh từ dữ liệu ---
-plt.figure(figsize=(6, 6))
-img = plot_to_bw_image_with_gaussian_dots(U_Closed, I_Closed, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_ALPHA)
-img = flip_ui_image(img)
-plt.title(f"Ảnh I-U (P_mean = {P_mean:.2f} W)")
-plt.imshow(img, cmap='gray')
 plt.tight_layout()
 
 plt.show()

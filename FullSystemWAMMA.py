@@ -17,7 +17,7 @@ isChecking = False
 if len(sys.argv) > 1:
     csv_path = sys.argv[1]
 else:
-    csv_path = r"ElectricDatas\MyNewData\data_9_quat_tulanh_event_on_maysay.csv"
+    csv_path = r"ElectricDatas\Unprocessed_datas\data_2.csv"
     isChecking = True
 parts = csv_path.replace("\\", "/").split("/")
 csv_path = os.path.join(*parts)
@@ -82,9 +82,18 @@ clf = MLP_Predict(
 matcher = TemplateMatcher("")
 CONFIDENCE_THRESHOLD = 0
 
+## Test
+IMG_NP = []
+U_LAST = []
+I_LAST = []
+U_CUR = []
+I_CUR = []
+I_RES = []
+
 # Hàm tính ảnh I2 - I1 và gọi hàm vẽ
 def cal_img(start1, start2):
     #print(SAMPLE_PER_IMAGE)
+    global U_LAST, I_LAST, U_CUR, I_CUR, I_RES, IMG_NP
     i1 = I_raw[start1 : start1 + SAMPLE_PER_IMAGE]
     u1 = U_raw[start1 : start1 + SAMPLE_PER_IMAGE]
     i2 = I_raw[start2 : start2 + SAMPLE_PER_IMAGE]
@@ -115,19 +124,19 @@ def cal_img(start1, start2):
     U_RES = smooth_savgol(U_RES)
     I_RES = smooth_savgol(I_RES)
     
-    img_np = plot_to_bw_image_with_gaussian_dots(U_RES, I_RES, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_ALPHA)
-    img_np = flip_ui_image(img_np)
-    label,confidence  = clf.predict(image_input=img_np, p_mean=delta_p_mean)
+    IMG_NP = plot_to_bw_image_with_gaussian_dots(U_RES, I_RES, config.IMAGE_SIZE, config.IMAGE_SIZE,config.IMG_DOT_RADIUS,config.IMG_DOT_ALPHA)
+    IMG_NP = flip_ui_image(IMG_NP)
+    label,confidence  = clf.predict(image_input=IMG_NP, p_mean=delta_p_mean)
     print("MLP label: " + str(label))
     if label == None:
         label = "null"
     # label = matcher.match(label,delta_p_mean)
-    if isChecking:
-        image = Image.fromarray(img_np, mode='L') 
-        plt_ui_full_onefig(SAMPLING_RATE, Power,
-                    start1, start1 + SAMPLE_PER_IMAGE,
-                    start2, start2 + SAMPLE_PER_IMAGE,
-                    U_LAST, I_LAST, U_CUR, I_CUR, I_RES,image,delta_p_mean,label,confidence)
+    # if isChecking:
+        # image = Image.fromarray(IMG_NP, mode='L') 
+        # plt_ui_full_onefig(SAMPLING_RATE, Power,
+        #             start1, start1 + SAMPLE_PER_IMAGE,
+        #             start2, start2 + SAMPLE_PER_IMAGE,
+        #             U_LAST, I_LAST, U_CUR, I_CUR, I_RES,image,delta_p_mean,label,confidence)
     if confidence < CONFIDENCE_THRESHOLD:
         label = "null"
     return label
@@ -178,5 +187,11 @@ for idx in range(data_len):
                         print(f"RESULT_LABEL={label}")
                         if label == device:
                             IsRightLabel = True
+                        if isChecking:
+                            image = Image.fromarray(IMG_NP, mode='L') 
+                            plt_ui_full_onefig(SAMPLING_RATE, Power,
+                                        start1, start1 + SAMPLE_PER_IMAGE,
+                                        start2, start2 + SAMPLE_PER_IMAGE,
+                                        U_LAST, I_LAST, U_CUR, I_CUR, I_RES,image,P_Mean,label,0)
                         
 print("EVENT_COUNT="+str(evt_count))
